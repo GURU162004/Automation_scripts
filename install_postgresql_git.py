@@ -28,6 +28,7 @@ def clone_source():
     run(f"git clone {SOURCE_URL}")
     
     print("\n listing branches : ")
+    os.chdir(SOURCE_FOLDER)
     run("git branch -r | grep REL")
     run(f"git checkout REL_{VERSION}_STABLE")
           
