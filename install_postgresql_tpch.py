@@ -63,7 +63,6 @@ def setup_database():
     
 def setup_tpch():
     if not os.path.exists(TPCH_DIR):
-        os.makedirs(TPCH_DIR)
         print("\n git cloning repository ....")
         run(f"git clone {TPCH_URL}")
     else:
