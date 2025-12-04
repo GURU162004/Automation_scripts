@@ -54,10 +54,10 @@ def setup_database():
     data_dir = os.path.join(INSTALL_PATH,"data")
     if not os.path.exists(data_dir):
         run(f"{BIN_DIR}/initdb -D {data_dir}")
-    status = subprocess.run(f"{bin_dir}/pg_ctl -D {data_dir} status", shell=True)
+    status = subprocess.run(f"{BIN_DIR}/pg_ctl -D {data_dir} status", shell=True)
     if(status.returncode!=0):
         print("\nPostgreSQL is not running. Starting server...")
-        run(f"{bin_dir}/pg_ctl -D {data_dir} -l logfile start")
+        run(f"{BIN_DIR}/pg_ctl -D {data_dir} -l logfile start")
     else:
         print("\nPostgreSQL server is already running.")
     
