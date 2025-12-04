@@ -66,7 +66,9 @@ def setup_tpch():
         os.makedirs(TPCH_DIR)
         print("\n git cloning repository ....")
         run(f"git clone {TPCH_URL}")
-    os.chdir(os.path.join(INSTALL_PATH,"dbgen"))
+    else:
+        print("\n tpch directory exists")
+    os.chdir(os.path.join(TPCH_DIR,"dbgen"))
     run("make clean")
     run("make MACHINE=LINUX DATABASE=POSTGRESQL")
     run(f"{BIN_DIR}/createdb -p 5433 tpch")
