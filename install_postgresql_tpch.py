@@ -71,6 +71,12 @@ def setup_tpch():
     run("make clean")
     run("make MACHINE=LINUX DATABASE=POSTGRESQL")
 
+    if not os.path.exists(os.path.join(dbgen_dir, "customer.tbl")):
+        print("\nGenerating TPC-H data (scale factor 1) ...")
+        run("./dbgen -s 1")
+    else:
+        print("\nTPC-H data already exists, skipping dbgen")
+
     run(f"{BIN_DIR}/dropdb -p 5433 --if-exists tpch")
     run(f"{BIN_DIR}/createdb -p 5433 tpch")
     create_schema = "\"CREATE SCHEMA IF NOT EXISTS tpch;\""
