@@ -10,7 +10,7 @@ TPCH_URL = "https://github.com/gregrahn/tpch-kit.git"
 HOME_DIR = os.path.expanduser("~")
 INSTALL_PATH = os.path.join(HOME_DIR, DIR_NAME)
 SOURCE_FOLDER = os.path.join(INSTALL_PATH, "postgres")
-TPCH_DIR = os.path.join(HOME_DIR, "tcph_kit")
+TPCH_DIR = os.path.join(HOME_DIR, "tpch_kit")
 DATA_DIR = os.path.join(INSTALL_PATH,"data")
 BIN_DIR = os.path.join(INSTALL_PATH,"bin")
 
