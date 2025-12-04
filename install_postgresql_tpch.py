@@ -98,7 +98,7 @@ if __name__=="__main__":
     clone_source()
     build_postgres()
     setup_database()
-    setup_tcph()
+    setup_tpch()
     run_queries()
     print("\n Postgresql installed successfully")
     
