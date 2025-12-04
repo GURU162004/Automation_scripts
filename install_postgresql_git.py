@@ -5,7 +5,7 @@ import requests
 
 DIR_NAME = "pgsql_git"
 SOURCE_URL = "https://github.com/postgres/postgres.git"
-VERSION = 18
+VERSION = 17
 
 HOME_DIR = os.path.expanduser("~")
 INSTALL_PATH = os.path.join(HOME_DIR, DIR_NAME)
@@ -40,7 +40,7 @@ def build_postgres():
     run("make install")
     
 def setup_database():
-    print("\n Setting up Database")
+    print("\n Setting up Database ")
     data_dir = os.path.join(INSTALL_PATH,f"data")
     bin_dir = os.path.join(INSTALL_PATH,f"bin")
     if not os.path.exists(data_dir):
