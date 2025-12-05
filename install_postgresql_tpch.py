@@ -92,10 +92,10 @@ def setup_tpch():
         sql = f"\\copy {tbl} FROM '{file}' WITH (FORMAT csv, DELIMITER '|', NULL '')"
         run(f'{BIN_DIR}/psql -p 5433 -d tpch -c "{sql}"',cwd=dbgen_dir)
     
-    run("cp -r queries queries_backup",cwd=dbgen_dir)
-    run("git clone https://github.com/dhuny/tpch.git temp",cwd=dbgen_dir)
-    run("cp temp/sample\ queries/*.sql queries/",cwd=dbgen_dir)
-    run("rm -rf temp",cwd=dbgen_dir)
+    makedirs(os.path.join(dbgen_dir,"sqlqueries"))
+    for i in range(1,23):
+        run(f"./qgen -d {i}",cwd=dbgen)
+        run(f"./qgen 1 > /sqlqueries/{i}.sql",cwd=dbgen,quiet=True)
 
 def run_queries():
     for i in range(1,23):
@@ -104,7 +104,7 @@ def run_queries():
         for r in range(3):
             print(f"running {qfile} ...")
             start = time.time()
-            run(f'{BIN_DIR}/psql -p 5433 -q -t -A -d tpch -c "\\timing on" -f {TPCH_DIR}/dbgen/queries/{qfile}')
+            run(f'{BIN_DIR}/psql -p 5433 -q -t -A -d tpch -c "\\timing on" -f {TPCH_DIR}/dbgen/sqlqueries/{qfile}')
             run_time = time.time()-start
             print(f"Trial {r+1}: Query {qfile} executed in {run_time:3f} seconds")
             run_times.append(run_time)
