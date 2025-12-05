@@ -92,11 +92,10 @@ def setup_tpch():
         sql = f"\\copy {tbl} FROM '{file}' WITH (FORMAT csv, DELIMITER '|', NULL '')"
         run(f'{BIN_DIR}/psql -p 5433 -d tpch -c "{sql}"',cwd=dbgen_dir)
     
-    if not os.path.exists(os.path.join(dbgen_dir,"sqlqueries")):
-        os.makedirs(os.path.join(dbgen_dir,"sqlqueries"))
-
-    for i in range(1,23):
-        run(f"./qgen {i} > /sqlqueries/{i}.sql",cwd=dbgen_dir,quiet=True)
+    run("cp -r queries queries_backup",cwd=dbgen_dir)
+    run("git clone https://github.com/dhuny/tpch.git temp",cwd=dbgen_dir)
+    run("cp temp/sample\ queries/*.sql queries/",cwd=dbgen_dir)
+    run("rm -rf temp",cwd=dbgen_dir)
 
 def run_queries():
     for i in range(1,23):

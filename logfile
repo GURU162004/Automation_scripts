@@ -226,3 +226,21 @@
 2025-12-05 13:11:33.156 IST [16045] LOG:  checkpoint complete: wrote 2239 buffers (13.7%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 33 recycled; write=38.030 s, sync=0.053 s, total=38.146 s; sync files=15, longest=0.026 s, average=0.004 s; distance=541593 kB, estimate=542073 kB; lsn=7/35E0EC28, redo lsn=7/1813E840
 2025-12-05 13:11:35.164 IST [16045] LOG:  checkpoint starting: wal
 2025-12-05 13:14:53.283 IST [16045] LOG:  checkpoint complete: wrote 4271 buffers (26.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 33 recycled; write=198.056 s, sync=0.004 s, total=198.119 s; sync files=22, longest=0.002 s, average=0.001 s; distance=540453 kB, estimate=541911 kB; lsn=7/4A58E630, redo lsn=7/39107E58
+2025-12-05 14:02:35.692 IST [16045] LOG:  checkpoint starting: immediate force wait time
+2025-12-05 14:02:35.717 IST [16045] LOG:  checkpoint complete: wrote 1 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 17 recycled; write=0.003 s, sync=0.002 s, total=0.026 s; sync files=2, longest=0.001 s, average=0.001 s; distance=283166 kB, estimate=516037 kB; lsn=7/4A58F858, redo lsn=7/4A58F800
+2025-12-05 14:02:52.376 IST [16045] LOG:  checkpoints are occurring too frequently (17 seconds apart)
+2025-12-05 14:02:52.376 IST [16045] HINT:  Consider increasing the configuration parameter "max_wal_size".
+2025-12-05 14:02:52.376 IST [16045] LOG:  checkpoint starting: wal
+2025-12-05 14:03:09.359 IST [16045] LOG:  checkpoint complete: wrote 3025 buffers (18.5%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 33 recycled; write=16.223 s, sync=0.487 s, total=16.984 s; sync files=317, longest=0.267 s, average=0.002 s; distance=539088 kB, estimate=539088 kB; lsn=7/89C6D910, redo lsn=7/6B403968
+2025-12-05 14:03:10.844 IST [16045] LOG:  checkpoints are occurring too frequently (18 seconds apart)
+2025-12-05 14:03:10.844 IST [16045] HINT:  Consider increasing the configuration parameter "max_wal_size".
+2025-12-05 14:03:10.844 IST [16045] LOG:  checkpoint starting: wal
+2025-12-05 14:03:30.506 IST [16045] LOG:  checkpoint complete: wrote 6091 buffers (37.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 33 recycled; write=19.291 s, sync=0.326 s, total=19.663 s; sync files=17, longest=0.155 s, average=0.020 s; distance=537269 kB, estimate=538906 kB; lsn=7/AA4EABA0, redo lsn=7/8C0B0FA8
+2025-12-05 14:03:32.433 IST [16045] LOG:  checkpoints are occurring too frequently (22 seconds apart)
+2025-12-05 14:03:32.433 IST [16045] HINT:  Consider increasing the configuration parameter "max_wal_size".
+2025-12-05 14:03:32.433 IST [16045] LOG:  checkpoint starting: wal
+2025-12-05 14:03:52.332 IST [16045] LOG:  checkpoint complete: wrote 2246 buffers (13.7%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 33 recycled; write=19.768 s, sync=0.067 s, total=19.899 s; sync files=17, longest=0.063 s, average=0.004 s; distance=539991 kB, estimate=539991 kB; lsn=7/CADACE88, redo lsn=7/AD006E28
+2025-12-05 14:03:54.335 IST [16045] LOG:  checkpoints are occurring too frequently (22 seconds apart)
+2025-12-05 14:03:54.335 IST [16045] HINT:  Consider increasing the configuration parameter "max_wal_size".
+2025-12-05 14:03:54.335 IST [16045] LOG:  checkpoint starting: wal
+2025-12-05 14:04:11.800 IST [16045] LOG:  checkpoint complete: wrote 3 buffers (0.0%), wrote 0 SLRU buffers; 0 WAL file(s) added, 0 removed, 33 recycled; write=17.351 s, sync=0.068 s, total=17.466 s; sync files=9, longest=0.049 s, average=0.008 s; distance=541699 kB, estimate=541699 kB; lsn=7/D79AB980, redo lsn=7/CE107BB8
