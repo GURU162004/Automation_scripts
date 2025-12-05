@@ -324,3 +324,23 @@
 2025-12-05 14:33:04.470 IST [73026] ERROR:  canceling statement due to user request
 2025-12-05 14:33:04.470 IST [73026] STATEMENT:  select s_acctbal, s_name, n_name, p_partkey, p_mfgr, s_address, s_phone, s_comment from PART, SUPPLIER, PARTSUPP, NATION, REGION where p_partkey = ps_partkey and s_suppkey = ps_suppkey and p_size = 15 and p_type like '%BRASS' and s_nationkey = n_nationkey and n_regionkey = r_regionkey and r_name = 'EUROPE' and ps_supplycost = (select min(ps_supplycost) from PARTSUPP, SUPPLIER, NATION, REGION where p_partkey = ps_partkey and s_suppkey = ps_suppkey and s_nationkey = n_nationkey and n_regionkey = r_regionkey and r_name = 'EUROPE') order by s_acctbal desc, n_name, s_name, p_partkey limit 100;
 2025-12-05 14:36:56.125 IST [16045] LOG:  checkpoint complete: wrote 10385 buffers (63.4%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 33 recycled; write=269.749 s, sync=0.001 s, total=269.806 s; sync files=23, longest=0.001 s, average=0.001 s; distance=537804 kB, estimate=543263 kB; lsn=A/76F75858, redo lsn=A/5F14B8A8
+2025-12-05 14:54:01.738 IST [16045] LOG:  checkpoint starting: immediate force wait
+2025-12-05 14:54:01.770 IST [16045] LOG:  checkpoint complete: wrote 1 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 23 recycled; write=0.001 s, sync=0.002 s, total=0.033 s; sync files=2, longest=0.001 s, average=0.001 s; distance=391341 kB, estimate=528071 kB; lsn=A/76F76DC8, redo lsn=A/76F76D70
+2025-12-05 14:54:19.274 IST [16045] LOG:  checkpoints are occurring too frequently (18 seconds apart)
+2025-12-05 14:54:19.274 IST [16045] HINT:  Consider increasing the configuration parameter "max_wal_size".
+2025-12-05 14:54:19.274 IST [16045] LOG:  checkpoint starting: wal
+2025-12-05 14:54:31.950 IST [16045] LOG:  checkpoint complete: wrote 3024 buffers (18.5%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 33 recycled; write=12.207 s, sync=0.408 s, total=12.676 s; sync files=315, longest=0.235 s, average=0.002 s; distance=525776 kB, estimate=527841 kB; lsn=A/B5F9BCB8, redo lsn=A/970EB128
+2025-12-05 14:54:32.463 IST [16045] LOG:  checkpoints are occurring too frequently (13 seconds apart)
+2025-12-05 14:54:32.463 IST [16045] HINT:  Consider increasing the configuration parameter "max_wal_size".
+2025-12-05 14:54:32.467 IST [16045] LOG:  checkpoint starting: wal
+2025-12-05 14:54:43.034 IST [16045] LOG:  checkpoint complete: wrote 2547 buffers (15.5%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 33 recycled; write=10.354 s, sync=0.164 s, total=10.571 s; sync files=16, longest=0.079 s, average=0.011 s; distance=542149 kB, estimate=542149 kB; lsn=A/D64D3868, redo lsn=A/B825C550
+2025-12-05 14:54:44.718 IST [16045] LOG:  checkpoints are occurring too frequently (12 seconds apart)
+2025-12-05 14:54:44.718 IST [16045] HINT:  Consider increasing the configuration parameter "max_wal_size".
+2025-12-05 14:54:44.719 IST [16045] LOG:  checkpoint starting: wal
+2025-12-05 14:54:52.298 IST [16045] LOG:  checkpoint complete: wrote 1240 buffers (7.6%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 33 recycled; write=6.462 s, sync=0.174 s, total=7.580 s; sync files=8, longest=0.170 s, average=0.022 s; distance=542483 kB, estimate=542483 kB; lsn=A/F744DE58, redo lsn=A/D9421268
+2025-12-05 14:54:54.417 IST [16045] LOG:  checkpoints are occurring too frequently (10 seconds apart)
+2025-12-05 14:54:54.417 IST [16045] HINT:  Consider increasing the configuration parameter "max_wal_size".
+2025-12-05 14:54:54.417 IST [16045] LOG:  checkpoint starting: wal
+2025-12-05 14:55:14.415 IST [16045] LOG:  checkpoint complete: wrote 14215 buffers (86.8%), wrote 0 SLRU buffers; 0 WAL file(s) added, 0 removed, 33 recycled; write=19.912 s, sync=0.035 s, total=19.999 s; sync files=2, longest=0.034 s, average=0.018 s; distance=536532 kB, estimate=541888 kB; lsn=B/17ED24A8, redo lsn=A/FA016340
+2025-12-05 14:55:30.198 IST [16045] LOG:  checkpoint starting: wal
+2025-12-05 15:00:00.168 IST [16045] LOG:  checkpoint complete: wrote 12204 buffers (74.5%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 33 recycled; write=269.895 s, sync=0.020 s, total=269.971 s; sync files=22, longest=0.018 s, average=0.001 s; distance=541356 kB, estimate=541835 kB; lsn=B/30504EA8, redo lsn=B/1B0C1620

@@ -104,7 +104,10 @@ def run_queries():
         run_times = []
         for r in range(3):
             print(f"Trial {r+1}: Query {qfile} executing...")
-            run(f'{BIN_DIR}/psql -p 5433 -q -t -d tpch -c "\\timing on" -f {TPCH_DIR}/dbgen/queries/{qfile} | grep "Time:"')
+            cmd = f'{BIN_DIR}/psql -p 5433 -q -t -d tpch -c "\\timing on" -f {TPCH_DIR}/dbgen/queries/{qfile} | grep "Time:"'
+            res = subprocess.run(cmd,shell=True,check=True,text=True,stdout = subprocess.PIPE)
+            output = res.stdout.split(' ')
+            run_time = float(output[1])
             run_times.append(run_time)
         avg = (run_times[0] + run_times[1] + run_times[2])/3.0
         print(f"The Average Execution time of the Query {qfile} is {avg:3f} seconds")
