@@ -86,7 +86,7 @@ def setup_tpch():
     for tbl in tables:
         file = f"{tbl}.tbl"
         sql = f"\"\copy {tbl} FROM '{file}' WITH (FORMAT csv, DELIMITER '|', NULL ''\""
-        run(f"{BIN_DIR}/psql -p 5433 -d tpch -c {sql}")
+        run(f'{BIN_DIR}/psql -p 5433 -d tpch -c {sql}')
     
     run("cp -r queries queries_backup")
     run("git clone https://github.com/dhuny/tpch.git temp")
