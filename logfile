@@ -418,3 +418,16 @@
 2025-12-05 15:17:54.162 IST [82520] ERROR:  canceling statement due to user request
 2025-12-05 15:17:54.162 IST [82520] STATEMENT:  select s_acctbal, s_name, n_name, p_partkey, p_mfgr, s_address, s_phone, s_comment from PART, SUPPLIER, PARTSUPP, NATION, REGION where p_partkey = ps_partkey and s_suppkey = ps_suppkey and p_size = 15 and p_type like '%BRASS' and s_nationkey = n_nationkey and n_regionkey = r_regionkey and r_name = 'EUROPE' and ps_supplycost = (select min(ps_supplycost) from PARTSUPP, SUPPLIER, NATION, REGION where p_partkey = ps_partkey and s_suppkey = ps_suppkey and s_nationkey = n_nationkey and n_regionkey = r_regionkey and r_name = 'EUROPE') order by s_acctbal desc, n_name, s_name, p_partkey limit 100;
 2025-12-05 15:18:27.075 IST [16045] LOG:  checkpoint complete: wrote 2233 buffers (13.6%), wrote 0 SLRU buffers; 0 WAL file(s) added, 0 removed, 33 recycled; write=269.312 s, sync=0.005 s, total=269.360 s; sync files=2, longest=0.004 s, average=0.003 s; distance=544551 kB, estimate=544551 kB; lsn=D/A0A6E318, redo lsn=D/9C3F22C8
+2025-12-05 15:39:37.955 IST [16045] LOG:  checkpoint starting: immediate force wait
+2025-12-05 15:39:37.964 IST [16045] LOG:  checkpoint complete: wrote 1 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 4 recycled; write=0.001 s, sync=0.001 s, total=0.010 s; sync files=2, longest=0.001 s, average=0.001 s; distance=72181 kB, estimate=497314 kB; lsn=D/A0A6FB00, redo lsn=D/A0A6FAA8
+2025-12-05 15:39:58.991 IST [16045] LOG:  checkpoints are occurring too frequently (21 seconds apart)
+2025-12-05 15:39:58.991 IST [16045] HINT:  Consider increasing the configuration parameter "max_wal_size".
+2025-12-05 15:39:58.991 IST [16045] LOG:  checkpoint starting: wal
+2025-12-05 15:40:14.990 IST [16045] LOG:  checkpoint complete: wrote 3025 buffers (18.5%), wrote 1 SLRU buffers; 0 WAL file(s) added, 1 removed, 32 recycled; write=15.495 s, sync=0.461 s, total=15.999 s; sync files=315, longest=0.289 s, average=0.002 s; distance=532137 kB, estimate=532137 kB; lsn=D/E01A0460, redo lsn=D/C1219EF8
+2025-12-05 15:40:15.973 IST [16045] LOG:  checkpoints are occurring too frequently (17 seconds apart)
+2025-12-05 15:40:15.973 IST [16045] HINT:  Consider increasing the configuration parameter "max_wal_size".
+2025-12-05 15:40:15.973 IST [16045] LOG:  checkpoint starting: wal
+2025-12-05 15:40:30.783 IST [16045] LOG:  checkpoint complete: wrote 2037 buffers (12.4%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 33 recycled; write=14.572 s, sync=0.190 s, total=14.811 s; sync files=16, longest=0.116 s, average=0.012 s; distance=540135 kB, estimate=540135 kB; lsn=E/2AF718, redo lsn=D/E2193D70
+2025-12-05 15:40:32.443 IST [16045] LOG:  checkpoints are occurring too frequently (17 seconds apart)
+2025-12-05 15:40:32.443 IST [16045] HINT:  Consider increasing the configuration parameter "max_wal_size".
+2025-12-05 15:40:32.443 IST [16045] LOG:  checkpoint starting: wal

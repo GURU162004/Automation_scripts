@@ -101,7 +101,7 @@ def setup_tpch():
 def run_queries():
     results_csv = os.path.join(TPCH_DIR, "tpch_results.csv")
     exists = os.path.exists(results_csv)
-    with open(results_file, "w", newline="") as csvfile:
+    with open(results_csv, "w", newline="") as csvfile:
         fields = ["Query","Trial1_Time(ms)","Trial2_Time(ms)","Trial3_Time(ms)","Average_Time(ms)"]
         writer = csv.DictWriter(results_csv,fieldnames=fields)
 
