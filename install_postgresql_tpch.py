@@ -104,7 +104,7 @@ def run_queries():
         for r in range(3):
             print(f"running {qfile} ...")
             start = time.time()
-            run(f'{BIN_DIR}/psql -p 5433 -q -d tpch -c "\timing on" -f {TPCH_DIR}/dbgen/queries/{qfile}')
+            run(f'{BIN_DIR}/psql -p 5433 -q -d tpch -c "\\timing on" -f {TPCH_DIR}/dbgen/queries/{qfile}')
             run_time = time.time()-start
             print(f"Trial {r+1}: Query {qfile} executed in {run_time:3f} seconds")
             run_times.append(run_time)
