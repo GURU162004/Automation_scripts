@@ -244,3 +244,13 @@
 2025-12-05 14:03:54.335 IST [16045] HINT:  Consider increasing the configuration parameter "max_wal_size".
 2025-12-05 14:03:54.335 IST [16045] LOG:  checkpoint starting: wal
 2025-12-05 14:04:11.800 IST [16045] LOG:  checkpoint complete: wrote 3 buffers (0.0%), wrote 0 SLRU buffers; 0 WAL file(s) added, 0 removed, 33 recycled; write=17.351 s, sync=0.068 s, total=17.466 s; sync files=9, longest=0.049 s, average=0.008 s; distance=541699 kB, estimate=541699 kB; lsn=7/D79AB980, redo lsn=7/CE107BB8
+2025-12-05 14:06:26.201 IST [16045] LOG:  checkpoint starting: immediate force wait
+2025-12-05 14:06:26.223 IST [16045] LOG:  checkpoint complete: wrote 1 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 13 recycled; write=0.002 s, sync=0.001 s, total=0.023 s; sync files=2, longest=0.001 s, average=0.001 s; distance=226397 kB, estimate=510169 kB; lsn=7/DBE1F200, redo lsn=7/DBE1F1A8
+2025-12-05 14:06:42.869 IST [16045] LOG:  checkpoints are occurring too frequently (16 seconds apart)
+2025-12-05 14:06:42.869 IST [16045] HINT:  Consider increasing the configuration parameter "max_wal_size".
+2025-12-05 14:06:42.869 IST [16045] LOG:  checkpoint starting: wal
+2025-12-05 14:06:56.955 IST [16045] LOG:  checkpoint complete: wrote 3023 buffers (18.5%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 33 recycled; write=13.518 s, sync=0.417 s, total=14.086 s; sync files=315, longest=0.216 s, average=0.002 s; distance=530083 kB, estimate=530083 kB; lsn=8/1AA7AFE8, redo lsn=7/FC3C7F38
+2025-12-05 14:06:57.992 IST [16045] LOG:  checkpoints are occurring too frequently (15 seconds apart)
+2025-12-05 14:06:57.992 IST [16045] HINT:  Consider increasing the configuration parameter "max_wal_size".
+2025-12-05 14:06:57.992 IST [16045] LOG:  checkpoint starting: wal
+2025-12-05 14:07:28.489 IST [16045] LOG:  checkpoint complete: wrote 6528 buffers (39.8%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 33 recycled; write=30.238 s, sync=0.216 s, total=30.498 s; sync files=29, longest=0.102 s, average=0.008 s; distance=539629 kB, estimate=539629 kB; lsn=8/3B2C8A20, redo lsn=8/1D2C3568
