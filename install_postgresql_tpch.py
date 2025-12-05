@@ -92,7 +92,7 @@ def setup_tpch():
         sql = f"\\copy {tbl} FROM '{file}' WITH (FORMAT csv, DELIMITER '|', NULL '')"
         run(f'{BIN_DIR}/psql -p 5433 -d tpch -c "{sql}"',cwd=dbgen_dir)
     
-    makedirs(os.path.join(dbgen_dir,"sqlqueries"))
+    os.makedirs(os.path.join(dbgen_dir,"sqlqueries"))
     for i in range(1,23):
         run(f"./qgen -d {i}",cwd=dbgen)
         run(f"./qgen 1 > /sqlqueries/{i}.sql",cwd=dbgen,quiet=True)
