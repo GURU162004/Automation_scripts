@@ -100,12 +100,17 @@ def setup_tpch():
 def run_queries():
     for i in range(1,23):
         qfile = str(i)+".sql"
+        run_times = []
         for r in range(3):
             print(f"running {qfile} ...")
             start = time.time()
             run(f'{BIN_DIR}/psql -p 5433 -q -d tpch -c "\timing on" -f {TPCH_DIR}/dbgen/queries/{qfile}')
             run_time = time.time()-start
             print(f"Trial {r+1}: Query {qfile} executed in {run_time:3f} seconds")
+            run_times.append(run_time)
+        avg = (run_times[0] + run_times[1] + run_times[2])/3.0
+        print(f"The Average Execution time of the Query {qfile} is {avg:3f} seconds")
+
     
 if __name__=="__main__":
     clone_source()
