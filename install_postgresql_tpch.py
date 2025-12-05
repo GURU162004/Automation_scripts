@@ -16,45 +16,45 @@ BIN_DIR = os.path.join(INSTALL_PATH,"bin")
 
 tables = ["customer","lineitem","nation","orders","part","partsupp","region","supplier"]
 
-def run(command, cwd=None, shell=True):
+def run(command, cwd=None, shell=True, quiet=False):
     print(f"\n Running: {command}")
     try:
-        subprocess.run(command, cwd=cwd, shell=shell, check=True)
+        if quiet:
+            subprocess.run(command, cwd=cwd, shell=shell, check = True, stdout = subprocess.DEVNULL)
+        else:
+            subprocess.run(command, cwd=cwd, shell=shell, check = True)
     except subprocess.CalledProcessError as e:
-        print(f"\n[!] Error executing command: {command}")
-        print(f"[!] Reason: {e}")
+        print(f"\nError executing command: {command}")
+        print(f"Reason: {e}")
         sys.exit(1)
     
 def clone_source():
-    if not os.path.exists(INSTALL_PATH):
-        os.makedirs(INSTALL_PATH)
+    os.makedirs(INSTALL_PATH)
+    if not os.path.exists(SOURCE_FOLDER):
         print("\n git cloning repository ....")
-        run(f"git clone {SOURCE_URL}")
-    os.chdir(INSTALL_PATH)
+        run(f"git clone {SOURCE_URL} postgres",cwd=INSTALL_PATH)
     
     print("\n listing branches : ")
-    os.chdir(SOURCE_FOLDER)
-    run("git branch -r | grep REL")
+    run("git branch -r | grep REL",cwd=SOURCE_FOLDER)
     VERSION = input("Enter Version : ")
-    run(f"git checkout REL_{VERSION}_STABLE")
+    run(f"git checkout REL_{VERSION}_STABLE"cwd=SOURCE_FOLDER)
           
 def build_postgres():
     postgres_bin = os.path.join(BIN_DIR,"postgres")
     if os.path.exists(postgres_bin):
         print("\nPostgreSQL is already compiled and installed")
         return
-    os.chdir(SOURCE_FOLDER)
     print("\n Configuring and Compiling ")
-    run(f"./configure --prefix={INSTALL_PATH} --with-pgport=5433")
-    run("make")
-    run("make install")
+    run(f"./configure --prefix={INSTALL_PATH} --with-pgport=5433",cwd=SOURCE_FOLDER)
+    run("make",cwd=SOURCE_FOLDER)
+    run("make install",cwd=SOURCE_FOLDER)
     
 def setup_database():
     print("\n Setting up Database")
     data_dir = os.path.join(INSTALL_PATH,"data")
     if not os.path.exists(data_dir):
         run(f"{BIN_DIR}/initdb -D {data_dir}")
-    status = subprocess.run(f"{BIN_DIR}/pg_ctl -D {data_dir} status", shell=True)
+    status = run(f"{BIN_DIR}/pg_ctl -D {data_dir} status", shell=True, quiet=True)
     if(status.returncode!=0):
         print("\nPostgreSQL is not running. Starting server...")
         run(f"{BIN_DIR}/pg_ctl -D {data_dir} -l logfile start")
@@ -67,31 +67,29 @@ def setup_tpch():
         run(f"git clone {TPCH_URL} {TPCH_DIR}")
     else:
         print("\n tpch directory exists")
-    os.chdir(os.path.join(TPCH_DIR,"dbgen"))
-    run("make clean")
-    run("make MACHINE=LINUX DATABASE=POSTGRESQL")
+    dbgen_dir = os.path.join(TPCH_DIR,"dbgen")
+    run("make clean",cwd=dbgen_dir,quiet=True)
+    run("make MACHINE=LINUX DATABASE=POSTGRESQL",cwd=dbgen_dir,quiet=True)
 
-    if not os.path.exists(os.path.join(TPCH_DIR,"dbgen","customer.tbl")):
+    if not os.path.exists(os.path.join(TPCH_DIR,"dbgen","supplier.tbl")):
         print("\nGenerating TPC-H data (scale factor 1) ...")
-        run("./dbgen -s 1")
+        run("./dbgen -s 1",cwd=dbgen_dir)
     else:
         print("\nTPC-H data already exists, skipping dbgen")
 
-    run(f"{BIN_DIR}/dropdb -p 5433 --if-exists tpch")
-    run(f"{BIN_DIR}/createdb -p 5433 tpch")
-    create_schema = "\"CREATE SCHEMA IF NOT EXISTS tpch;\""
-    run(f'{BIN_DIR}/psql -p 5433 -d tpch -c {create_schema}')
-    run(f"{BIN_DIR}/psql -p 5433 -d tpch -f dss.ddl")
+    run(f"{BIN_DIR}/dropdb -p 5433 --if-exists tpch",cwd=dbgen_dir)
+    run(f"{BIN_DIR}/createdb -p 5433 tpch",cwd=dbgen_dir)
+    run(f"{BIN_DIR}/psql -p 5433 -d tpch -f dss.ddl",cwd=dbgen_dir)
     
     for tbl in tables:
         file = f"{tbl}.tbl"
-    sql = f"\\copy {tbl} FROM '{file}' WITH (FORMAT csv, DELIMITER '|', NULL '')"
-    run(f'{BIN_DIR}/psql -p 5433 -d tpch -c "{sql}"')
+        sql = f"\\copy {tbl} FROM '{file}' WITH (FORMAT csv, DELIMITER '|', NULL '')"
+        run(f'{BIN_DIR}/psql -p 5433 -d tpch -c "{sql}"',cwd=dbgen_dir)
     
-    run("cp -r queries queries_backup")
-    run("git clone https://github.com/dhuny/tpch.git temp")
-    run("cp temp/sample\ queries/*.sql queries/")
-    run("rm -rf temp")
+    run("cp -r queries queries_backup",cwd=dbgen_dir)
+    run("git clone https://github.com/dhuny/tpch.git temp",cwd=dbgen_dir)
+    run("cp temp/sample\ queries/*.sql queries/",cwd=dbgen_dir)
+    run("rm -rf temp",cwd=dbgen_dir)
 
 def run_queries():
     for i in range(1,23):
