@@ -29,7 +29,8 @@ def run(command, cwd=None, shell=True, quiet=False):
         sys.exit(1)
     
 def clone_source():
-    os.makedirs(INSTALL_PATH)
+    if not os.path.exists(INSTALL_PATH):
+        os.makedirs(INSTALL_PATH)
     if not os.path.exists(SOURCE_FOLDER):
         print("\n git cloning repository ....")
         run(f"git clone {SOURCE_URL} postgres",cwd=INSTALL_PATH)
