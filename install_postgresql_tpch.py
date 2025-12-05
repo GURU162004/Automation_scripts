@@ -100,12 +100,12 @@ def setup_tpch():
 def run_queries():
     for i in range(1,23):
         qfile = str(i)+".sql"
-        print(f"running {qfile} ...")
-        start = time.time()
-        run(F"{BIN_DIR}/psql -p 5433 -d tpch -f {TPCH_DIR}/dbgen/queries/{qfile}")
-        end = time.time()
-        run_time = end - start
-        print(f"Query {qfile} executed in {run_time:.3f} seconds")
+        for r in range(3):
+            print(f"running {qfile} ...")
+            start = time.time()
+            run(f'{BIN_DIR}/psql -p 5433 -q -d tpch -c "\timing on" -f {TPCH_DIR}/dbgen/queries/{qfile}')
+            run_time = time.time()-start
+            print(f"Trial {r+1}: Query {qfile} executed in {run_time:3f} seconds")
     
 if __name__=="__main__":
     clone_source()
@@ -113,7 +113,4 @@ if __name__=="__main__":
     setup_database()
     setup_tpch()
     run_queries()
-    print("\n Postgresql installed successfully")
-    
-    
-
+    print("\n Tested Tpch Dataset")
