@@ -20,7 +20,7 @@ def run(command, cwd=None, shell=True, quiet=False):
     print(f"\n Running: {command}")
     try:
         if quiet:
-            subprocess.run(command, cwd=cwd, shell=shell, check = True, stdout = subprocess.DEVNULL)
+            subprocess.run(command, cwd=cwd, shell=shell, check = True, stdout = subprocess.DEVNULL, stderr = subprocess.DEVNULL)
         else:
             subprocess.run(command, cwd=cwd, shell=shell, check = True)
     except subprocess.CalledProcessError as e:
@@ -55,7 +55,12 @@ def setup_database():
     data_dir = os.path.join(INSTALL_PATH,"data")
     if not os.path.exists(data_dir):
         run(f"{BIN_DIR}/initdb -D {data_dir}")
-    status = run(f"{BIN_DIR}/pg_ctl -D {data_dir} status", shell=True, quiet=True)
+    status = subprocess.run(
+        f"{BIN_DIR}/pg_ctl -D {data_dir} status",
+        shell=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
     if(status.returncode!=0):
         print("\nPostgreSQL is not running. Starting server...")
         run(f"{BIN_DIR}/pg_ctl -D {data_dir} -l logfile start")
