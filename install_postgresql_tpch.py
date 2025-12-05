@@ -96,12 +96,11 @@ def setup_tpch():
         os.makedirs(os.path.join(dbgen_dir,"sqlqueries"))
 
     for i in range(1,23):
-        run(f"./qgen -d {i}",cwd=dbgen_dir)
-        run(f"./qgen 1 > /sqlqueries/{i}.sql",cwd=dbgen_dir,quiet=True)
+        run(f"./qgen {i} > /sqlqueries/{i}.sql",cwd=dbgen_dir,quiet=True)
 
 def run_queries():
     for i in range(1,23):
-        qfile = str(i)+".sql"
+        qfile = "q"+str(i)+".sql"
         run_times = []
         for r in range(3):
             print(f"running {qfile} ...")
@@ -113,7 +112,6 @@ def run_queries():
         avg = (run_times[0] + run_times[1] + run_times[2])/3.0
         print(f"The Average Execution time of the Query {qfile} is {avg:3f} seconds")
 
-    
 if __name__=="__main__":
     clone_source()
     build_postgres()
