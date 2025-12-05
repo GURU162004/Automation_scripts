@@ -37,7 +37,7 @@ def clone_source():
     print("\n listing branches : ")
     run("git branch -r | grep REL",cwd=SOURCE_FOLDER)
     VERSION = input("Enter Version : ")
-    run(f"git checkout REL_{VERSION}_STABLE"cwd=SOURCE_FOLDER)
+    run(f"git checkout REL_{VERSION}_STABLE",cwd=SOURCE_FOLDER)
           
 def build_postgres():
     postgres_bin = os.path.join(BIN_DIR,"postgres")
