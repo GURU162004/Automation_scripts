@@ -518,3 +518,15 @@
 2025-12-05 19:04:08.511 IST [16045] LOG:  checkpoint starting: shutdown immediate
 2025-12-05 19:04:08.517 IST [16045] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 0 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.001 s, sync=0.001 s, total=0.007 s; sync files=0, longest=0.000 s, average=0.000 s; distance=0 kB, estimate=413250 kB; lsn=10/4B240530, redo lsn=10/4B240530
 2025-12-05 19:04:08.566 IST [16040] LOG:  database system is shut down
+2025-12-08 14:52:21.662 IST [86543] LOG:  starting PostgreSQL 18.1 on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0, 64-bit
+2025-12-08 14:52:21.663 IST [86543] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2025-12-08 14:52:21.663 IST [86543] LOG:  listening on Unix socket "/tmp/.s.PGSQL.5432"
+2025-12-08 14:52:21.667 IST [86552] LOG:  database system was shut down at 2025-12-08 14:30:19 IST
+2025-12-08 14:52:21.670 IST [86543] LOG:  database system is ready to accept connections
+2025-12-08 14:53:08.708 IST [86543] LOG:  received fast shutdown request
+2025-12-08 14:53:08.711 IST [86543] LOG:  aborting any active transactions
+2025-12-08 14:53:08.713 IST [86543] LOG:  background worker "logical replication launcher" (PID 86555) exited with exit code 1
+2025-12-08 14:53:08.714 IST [86550] LOG:  shutting down
+2025-12-08 14:53:08.715 IST [86550] LOG:  checkpoint starting: shutdown immediate
+2025-12-08 14:53:08.724 IST [86550] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 3 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.001 s, sync=0.002 s, total=0.011 s; sync files=2, longest=0.001 s, average=0.001 s; distance=0 kB, estimate=0 kB; lsn=0/1761348, redo lsn=0/1761348
+2025-12-08 14:53:08.736 IST [86543] LOG:  database system is shut down

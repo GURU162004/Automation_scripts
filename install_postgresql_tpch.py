@@ -64,7 +64,7 @@ def setup_database():
     )
     if(status.returncode!=0):
         print("\nPostgreSQL is not running. Starting server...")
-        run(f"{BIN_DIR}/pg_ctl -D {data_dir} -l logfile start")#If not running, the server is started and output id logged to the logfile
+        run(f"{BIN_DIR}/pg_ctl -D {data_dir} -l logfile start")#If not running, the server is started and output logged to the logfile
     else:
         print("\nPostgreSQL server is already running.")
     

@@ -53,7 +53,8 @@ def setup_database():
     if not os.path.exists(data_dir):
         run(f"{bin_dir}/initdb -D {data_dir}")
     run(f"{bin_dir}/pg_ctl -D {data_dir} -l logfile start")
-    run(f"{bin_dir}/createdb test")
+    dbname = input("Enter Database Name: ")
+    run(f"{bin_dir}/createdb {dbname}")
     
 if __name__=="__main__":
     download_source()
