@@ -42,10 +42,6 @@ def clone_source():
     run(f"git checkout REL_{VERSION}_STABLE",cwd=SOURCE_FOLDER)#Switches to the preferred version
           
 def build_postgres():
-    postgres_bin = os.path.join(BIN_DIR,"postgres")
-    if os.path.exists(postgres_bin):#Bin directory is created when the source is compiled and installed
-        print("\nPostgreSQL is already compiled and installed")
-        return
     print("\n Configuring and Compiling ")
     run(f"./configure --prefix={INSTALL_PATH} --with-pgport=5433",cwd=SOURCE_FOLDER)#Configured to install in a custom folder in home and run at port 5433
     run("make",cwd=SOURCE_FOLDER)#Compiles and builds the source
@@ -96,7 +92,7 @@ def setup_tpch():
     run("cp -r queries queries_backup",cwd=dbgen_dir)#copies the queries to the queries_backup folder
     run("git clone https://github.com/dhuny/tpch.git temp",cwd=dbgen_dir)#clones TPC-H sql queries to temp folder
     run("cp temp/sample\ queries/*.sql queries/",cwd=dbgen_dir)#copies temp/sample queries/*.sql files to queries folder
-    run("rm -rf temp",cwd=dbgen_dir)
+    run("rm -rf temp",cwd=dbgen_dir)#Removes the temperory copy
 
 def run_queries():
     results_csv = "tpch_results.csv"
@@ -120,7 +116,7 @@ def run_queries():
                 run_time = float(output[1])#Extracts the time value from the Time: output in float data type
                 run_times.append(run_time)
                 print(f'Time: {run_time:.2f} ms')
-            avg = (run_times[0] + run_times[1] + run_times[2])/3.0
+            avg = (run_times[0] + run_times[1] + run_times[2])/3.0 #Computes Average execution time by the query for 3 trials
             print(f"The Average Execution time of the Query {qfile} is {avg:.2f} ms")
             writer.writerow([qfile] + run_times + [avg])#writes records for each query
     print(f"\nResults saved to: {results_csv}")

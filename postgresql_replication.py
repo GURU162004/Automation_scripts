@@ -42,10 +42,6 @@ def clone_source():
     run(f"git checkout REL_{VERSION}_STABLE")
           
 def build_postgres():
-    postgres_bin = os.path.join(bin_dir,"postgres")
-    if os.path.exists(postgres_bin):
-        print("\nPostgreSQL is already compiled and installed")
-        return
     os.chdir(SOURCE_FOLDER)
     print("\n Configuring, Compiling and Installing PostgreSQL")
     run(f"./configure --prefix={INSTALL_PATH} --with-pgport=5432")
