@@ -1,6 +1,7 @@
 import subprocess
 import sys
 import os
+import time
 
 DIR_NAME = "pgsql_replica"
 SOURCE_URL = "https://github.com/postgres/postgres.git"
@@ -78,16 +79,17 @@ def setup_master():
 
 def setup_slave(ctr :int):
     print("\n Setting up Slave")
-
+    slot_nm = f'slave_{ctr}'  
     slave_dir = os.path.join(INSTALL_PATH,f"slave_data{ctr}")#Slave data
+    
     if os.path.exists(slave_dir):
         status = subprocess.run(f"{bin_dir}/pg_ctl -D {slave_dir} status", shell=True)
         if(status.returncode==0):
             run(f"{bin_dir}/pg_ctl -D {slave_dir} -m fast stop")
+        run(f"{bin_dir}/psql -U postgres -p 5432 -d postgres -c \"SELECT pg_drop_replication_slot('{slot_nm}')\"")
         run(f"rm -rf {slave_dir}")
-        
-    slot_nm = f'slave_{ctr}'    
-    run(f"{bin_dir}/pg_basebackup -U postgres -D {slave_dir} -h {MASTER_IP} -p 5432 -X stream -R -S {slot_nm}")
+
+    run(f"{bin_dir}/pg_basebackup -U postgres -D {slave_dir} -h {MASTER_IP} -p 5432 -X stream -R -C -S {slot_nm}")
     port = 5432+ctr
 
     pgconf1 = os.path.join(slave_dir,"postgresql.conf")
@@ -115,9 +117,34 @@ def test_replication():
     )
     cmd_master = f'{bin_dir}/psql -U postgres -p 5432 -d repltest -c "{test_sql}"'
     run(cmd_master)
+    catchup_lag(5433)
     cmd_slave = f'{bin_dir}/psql -U postgres -p 5433 -d repltest -c "SELECT pg_is_in_recovery(), * FROM test_replication;"'
     run(cmd_slave)
-    
+
+def show_replication_status(slave_port: int):
+    print("WAL Sender status on Master")
+    master_sql = (
+        "SELECT pid, client_addr, state, sync_state, sent_lsn, write_lsn, replay_lsn "
+        "FROM pg_stat_replication;"
+    )
+    run(f'{bin_dir}/psql -U postgres -p 5432 -d postgres -c "{master_sql}"')
+
+    print("\nWAL Receiver status on Slave: \n")
+    slave_sql = ("SELECT status, written_lsn, slot_name FROM pg_stat_wal_receiver;")
+    run(f'{bin_dir}/psql -U postgres -p {slave_port} -d postgres -c "{slave_sql}"')
+
+def catchup_lag(slave_port : int):
+    while True:
+        cmd_master = (f'{bin_dir}/psql -U postgres -p 5432 -d postgres -t -c "SELECT pg_current_wal_lsn();"')
+        master_lsn = subprocess.getoutput(cmd_master).strip()
+        cmd_standby = (f'{bin_dir}/psql -U postgres -p {slave_port} -d postgres -t -c "SELECT pg_last_wal_receive_lsn();"')
+        standby_lsn = subprocess.getoutput(cmd_standby).strip()
+        print(f"  master_lsn={master_lsn}, standby_received_lsn={standby_lsn}")
+        if master_lsn == standby_lsn and master_lsn not in ("", "(null)"):
+            print("Slave has received WAL up to Master's current LSN.")
+            break
+        time.sleep(2)
+
 if __name__=="__main__":
     clone_source()
     build_postgres()
@@ -129,21 +156,21 @@ if __name__=="__main__":
         print("\nEnter 1 : Setup Master")
         print("\nEnter 2 : Create and Setup Slave")
         print("\nEnter 3 : Exit")
-        c = int(input("Enter Choice : "))
+        c = int(input("\nEnter Choice : "))
         if c==1 and mf==0:
             setup_master()
             print("Created Master and it is running...")
-            mf=1
+            mf=1#Flag to create only one Master
         elif c==2:
             ctr+=1
-            setup_slave(ctr)
+            setup_slave(ctr)    
             print(f"Created Slave {ctr} and it is running...")
         else:
             break
     
     print("\n Configured Master Slave Replication Setup")
-
-    print("Testing Master Slave setup..")
+    show_replication_status(5433)
+    print("Testing Single Master Slave setup..")
     test_replication()
     
     
