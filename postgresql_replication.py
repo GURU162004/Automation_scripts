@@ -118,6 +118,7 @@ def test_replication():
     cmd_master = f'{bin_dir}/psql -U postgres -p 5432 -d repltest -c "{test_sql}"'
     run(cmd_master)
     catchup_lag(5433)
+    wait_catchup(5433)
     cmd_slave = f'{bin_dir}/psql -U postgres -p 5433 -d repltest -c "SELECT pg_is_in_recovery(), * FROM test_replication;"'
     run(cmd_slave)
 
@@ -143,7 +144,20 @@ def catchup_lag(slave_port : int):
         if master_lsn == standby_lsn and master_lsn not in ("", "(null)"):
             print("Slave has received WAL up to Master's current LSN.")
             break
-        time.sleep(5)
+        time.sleep(2)
+
+def wait_catchup(slave_port: int):
+    while True:
+        cmd = (
+            f'{bin_dir}/psql -U postgres -p {slave_port} -d postgres '
+            f'-t -c "SELECT pg_last_wal_receive_lsn() = pg_last_wal_replay_lsn();"'
+        )
+        result = subprocess.getoutput(cmd).strip()
+        if result == "t":
+            print("Standby has replayed all received WAL.")
+            break
+        time.sleep(2)
+
 
 if __name__=="__main__":
     clone_source()
