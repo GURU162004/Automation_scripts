@@ -10,11 +10,8 @@ INSTALL_PATH = os.path.join(HOME_DIR, DIR_NAME)
 SOURCE_FOLDER = os.path.join(INSTALL_PATH, "postgres")
 bin_dir = os.path.join(INSTALL_PATH,"bin")
 master_dir = os.path.join(INSTALL_PATH,"master_data")#Master data
-slave_dir = os.path.join(INSTALL_PATH,"slave_data")#Slave data
 log_dir = os.path.join(HOME_DIR,"pglogs")#Postgresql Master and Slave logs
 
-SU_PASSWORD = "supass" #Super user password
-RU_PASSWORD = "repass" #replication user password
 MASTER_IP = "127.0.0.1" #MASTER_IP_Address DEFAULT local host
 SLAVE_IP = "127.0.0.1" #SLAVE_IP_Address DEFAULT local host
 
@@ -51,21 +48,15 @@ def build_postgres():
 def setup_master():
     print("\n Setting up Master")
 
-    pwfile = os.path.join(INSTALL_PATH, "master_pw.txt")
-    with open(pwfile, "w", encoding="utf-8") as f:
-        f.write(SU_PASSWORD + "\n")
-    run(f"chmod 600 {pwfile}")
-
     if os.path.exists(master_dir):
         status = subprocess.run(f"{bin_dir}/pg_ctl -D {master_dir} status", shell=True)
         if(status.returncode==0):
             run(f"{bin_dir}/pg_ctl -D {master_dir} -m fast stop")
-        run(f"rm -rf {master_dir}")
-
-    run(f"{bin_dir}/initdb -D {master_dir} -U postgres -A scram-sha-256 --pwfile={pwfile}")
+    else:
+        run(f"{bin_dir}/initdb -U postgres -D {master_dir}")
 
     pgconf = os.path.join(master_dir,"postgresql.conf")
-    with open(pgconf,"a",encoding="utf-8") as f:
+    with open(pgconf,"a") as f:
         f.write(f"\nport = 5432")
         if MASTER_IP == "127.0.0.1" and SLAVE_IP == "127.0.0.1":
             f.write(f"\nlisten_addresses = \'localhost\'")
@@ -77,46 +68,45 @@ def setup_master():
         f.write(f"\nmax_replication_slots = 10")
 
     pg_hba = os.path.join(master_dir,"pg_hba.conf")
-    with open(pg_hba,"a", encoding="utf-8") as f:
-        f.write(f"host    replication    repuser    {SLAVE_IP}/32    scram-sha-256\n")
+    with open(pg_hba,"a") as f:
+        f.write(f"host    replication    postgres    {SLAVE_IP}/32    trust\n")
 
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
     
     run(f"{bin_dir}/pg_ctl -D {master_dir} -l {log_dir}/master.log start")
 
-    env = os.environ.copy()
-    env["PGPASSWORD"] = SU_PASSWORD
-    run(f'{bin_dir}/psql -U postgres -p 5432 -d postgres -c "CREATE ROLE repuser WITH REPLICATION LOGIN PASSWORD \'{RU_PASSWORD}\';"',env=env)
-
-def setup_slave():
+def setup_slave(ctr :int):
     print("\n Setting up Slave")
-    env = os.environ.copy()
-    env["PGPASSWORD"] = RU_PASSWORD
 
+    slave_dir = os.path.join(INSTALL_PATH,f"slave_data{ctr}")#Slave data
     if os.path.exists(slave_dir):
         status = subprocess.run(f"{bin_dir}/pg_ctl -D {slave_dir} status", shell=True)
         if(status.returncode==0):
             run(f"{bin_dir}/pg_ctl -D {slave_dir} -m fast stop")
         run(f"rm -rf {slave_dir}")
+        
+    slot_nm = f'slave_{ctr}'    
+    run(f"{bin_dir}/pg_basebackup -U postgres -D {slave_dir} -h {MASTER_IP} -p 5432 -X stream -R -S {slot_nm}")
+    port = 5432+ctr
 
-    run(f"{bin_dir}/pg_basebackup -D {slave_dir} -U repuser -h {MASTER_IP} -p 5432 -Fp -Xs -P -R",env=env)
     pgconf1 = os.path.join(slave_dir,"postgresql.conf")
-
-    with open(pgconf1,"a",encoding="utf-8") as f:
-        f.write(f"\nport = 5433")
-        f.write(f"\nlisten_addresses = \'localhost\'")
+    with open(pgconf1,"a") as f:
+        f.write(f"\nport = {port}")
+        if MASTER_IP == "127.0.0.1" and SLAVE_IP == "127.0.0.1":
+            f.write(f"\nlisten_addresses = \'localhost\'")
+        else:
+            f.write(f"\nlisten_addresses = \'*\'")
+        f.write(f"\nprimary_slot_name = '{slot_nm}'")
         f.write(f"\nhot_standby = on")
     run(f"chmod 700 {slave_dir}")
 
-    print("\nStarting Slave server...")
-    run(f"{bin_dir}/pg_ctl -D {slave_dir} -l {log_dir}/slave.log start")
+    print(f"\nStarting Slave {ctr} server...")
+    run(f"{bin_dir}/pg_ctl -D {slave_dir} -l {log_dir}/slave{ctr}.log start")
 
 def test_replication():
-    env = os.environ.copy()
-    env["PGPASSWORD"] = SU_PASSWORD
-
-    run(f'{bin_dir}/psql -U postgres -p 5432 -d postgres -c "CREATE DATABASE repltest;"',env=env)
+    run(f'{bin_dir}/psql -U postgres -p 5432 -d postgres -c "DROP DATABASE IF EXISTS repltest;"')
+    run(f'{bin_dir}/psql -U postgres -p 5432 -d postgres -c "CREATE DATABASE repltest;"')
     
     test_sql = (
         " CREATE TABLE test_replication (id serial primary key, data text);"
@@ -124,17 +114,36 @@ def test_replication():
         " SELECT * FROM test_replication;"
     )
     cmd_master = f'{bin_dir}/psql -U postgres -p 5432 -d repltest -c "{test_sql}"'
-    run(cmd_master,env=env)
+    run(cmd_master)
     cmd_slave = f'{bin_dir}/psql -U postgres -p 5433 -d repltest -c "SELECT pg_is_in_recovery(), * FROM test_replication;"'
-    run(cmd_slave,env=env)
+    run(cmd_slave)
     
 if __name__=="__main__":
     clone_source()
     build_postgres()
-    setup_master()
-    setup_slave()
-    print("\n Postgresql installed and configured Master Slave Replication Setup")
-    print("Testing Master Slave setup")
+    print("\n Postgresql Installed")
+    c=0
+    mf=0
+    ctr=0
+    while(True):
+        print("\nEnter 1 : Setup Master")
+        print("\nEnter 2 : Create and Setup Slave")
+        print("\nEnter 3 : Exit")
+        c = int(input("Enter Choice : "))
+        if c==1 and mf==0:
+            setup_master()
+            print("Created Master and it is running...")
+            mf=1
+        elif c==2:
+            ctr+=1
+            setup_slave(ctr)
+            print(f"Created Slave {ctr} and it is running...")
+        else:
+            break
+    
+    print("\n Configured Master Slave Replication Setup")
+
+    print("Testing Master Slave setup..")
     test_replication()
     
     
