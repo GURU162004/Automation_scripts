@@ -51,22 +51,22 @@ def setup_master():
 
     if os.path.exists(master_dir):
         status = subprocess.run(f"{bin_dir}/pg_ctl -D {master_dir} status", shell=True)
-        if(status.returncode==0):
-            run(f"{bin_dir}/pg_ctl -D {master_dir} -m fast stop")
-    else:
-        run(f"{bin_dir}/initdb -U postgres -D {master_dir}")
+        if(status.returncode==0):#Checks if Master server is running, if running, cmd exit return code is 0
+            run(f"{bin_dir}/pg_ctl -D {master_dir} -m fast stop")#If running, Master server stopped
+    else:#If Master_data directory does not exist
+        run(f"{bin_dir}/initdb -U postgres -D {master_dir}")#Initializes the Master with common user postgres 
 
     pgconf = os.path.join(master_dir,"postgresql.conf")
     with open(pgconf,"a") as f:
         f.write(f"\nport = 5432")
-        if MASTER_IP == "127.0.0.1" and SLAVE_IP == "127.0.0.1":
-            f.write(f"\nlisten_addresses = \'localhost\'")
+        if MASTER_IP == "127.0.0.1" and SLAVE_IP == "127.0.0.1":#Checks the IPs are local host or not
+            f.write(f"\nlisten_addresses = \'localhost\'")#If yes, sets listen addresses to local host
         else:
-            f.write(f"\nlisten_addresses = \'*\'")
+            f.write(f"\nlisten_addresses = \'*\'")#else, sets the listening addresses to *(to listen all IPv4s)
         f.write(f"\nwal_level = replica")
-        f.write(f"\nmax_wal_senders = 10")
+        f.write(f"\nmax_wal_senders = 10")#Set according to number of slaves required, default 10
         f.write(f"\nwal_keep_size = 1000")
-        f.write(f"\nmax_replication_slots = 10")
+        f.write(f"\nmax_replication_slots = 10")#Set according to number of slaves required, default 10
 
     pg_hba = os.path.join(master_dir,"pg_hba.conf")
     with open(pg_hba,"a") as f:
@@ -143,15 +143,15 @@ def catchup_lag(slave_port : int):
         if master_lsn == standby_lsn and master_lsn not in ("", "(null)"):
             print("Slave has received WAL up to Master's current LSN.")
             break
-        time.sleep(2)
+        time.sleep(5)
 
 if __name__=="__main__":
     clone_source()
     build_postgres()
     print("\n Postgresql Installed")
-    c=0
-    mf=0
-    ctr=0
+    c=0#choice
+    mf=0#Master_flag
+    ctr=0#Slaves counter
     while(True):
         print("\nEnter 1 : Setup Master")
         print("\nEnter 2 : Create and Setup Slave")
