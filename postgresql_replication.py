@@ -12,6 +12,7 @@ SOURCE_FOLDER = os.path.join(INSTALL_PATH, "postgres")
 bin_dir = os.path.join(INSTALL_PATH,"bin")
 master_dir = os.path.join(INSTALL_PATH,"master_data")#Master data
 log_dir = os.path.join(HOME_DIR,"pglogs")#Postgresql Master and Slave logs
+vfile = os.path.join(INSTALL_PATH,"version.txt")
 
 MASTER_IP = "127.0.0.1" #MASTER_IP_Address DEFAULT local host
 SLAVE_IP = "127.0.0.1" #SLAVE_IP_Address DEFAULT local host
@@ -38,10 +39,16 @@ def clone_source():
     run("git branch -r | grep REL")
     VERSION = input("Enter Version : ")
     run(f"git checkout REL_{VERSION}_STABLE")
+    with open(vfile,"w") as f:
+        f.write(VERSION)
+    build_postgres(VERSION)
           
-def build_postgres():
-    if os.path.exists(bin_dir) and not v == VERSION:
-        print("PostgreSQL already compiled and installed")
+def build_postgres(VERSION : str):
+    postgres_bin = os.path.join(bin_dir,"postgres")
+    with open(vfile,"r") as f:
+        v = f.read()
+    if os.path.exists(postgres_bin) and v==VERSION:
+        print("\nPostgreSQL is already compiled and installed")
         return
     os.chdir(SOURCE_FOLDER)
     print("\n Configuring, Compiling and Installing PostgreSQL")
@@ -51,7 +58,6 @@ def build_postgres():
     
 def setup_master():
     print("\n Setting up Master")
-
     if os.path.exists(master_dir):
         status = subprocess.run(f"{bin_dir}/pg_ctl -D {master_dir} status", shell=True)
         if(status.returncode==0):#Checks if Master server is running, if running, cmd exit return code is 0
@@ -149,7 +155,6 @@ def catchup_lag(slave_port : int):
 
 if __name__=="__main__":
     clone_source()
-    build_postgres()
     print("\n Postgresql Installed")
     c=0#choice
     mf=0#Master_flag
