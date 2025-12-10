@@ -10,7 +10,7 @@ HOME_DIR = os.path.expanduser("~")
 INSTALL_PATH = os.path.join(HOME_DIR, DIR_NAME)
 SOURCE_FOLDER = os.path.join(INSTALL_PATH, "postgres")
 bin_dir = os.path.join(INSTALL_PATH,"bin")
-master_dir = os.path.join(INSTALL_PATH,"master_data")#Master data
+master_dir = os.path.join(INSTALL_PATH,"master_data")#Master data directory
 log_dir = os.path.join(HOME_DIR,"pglogs")#Postgresql Master and Slave logs
 vfile = os.path.join(INSTALL_PATH,"version.txt")
 
@@ -46,7 +46,8 @@ def build_postgres(VERSION : str):
     v = VERSION
     if os.path.exists(vfile):
         with open(vfile,"r") as f:
-            v = f.read()
+            v = f.read().strip()
+        run(f"rm -rf {vfile}")
     if os.path.exists(postgres_bin) and v==VERSION:#Postgresql is installed when the postgres bin directory is present and it is same as the specified version
         print("\nPostgreSQL is already compiled and installed")
         return
@@ -64,8 +65,8 @@ def setup_master():
         status = subprocess.run(f"{bin_dir}/pg_ctl -D {master_dir} status", shell=True)
         if(status.returncode==0):#Checks if Master server is running, if running, cmd exit return code is 0
             run(f"{bin_dir}/pg_ctl -D {master_dir} -m fast stop")#If running, Master server stopped
-    else:#If Master_data directory does not exist
-        run(f"{bin_dir}/initdb -U postgres -D {master_dir}")#Initializes the Master with common user postgres 
+        run(f"rm -rf {master_dir}")#removes previous master if exists
+    run(f"{bin_dir}/initdb -U postgres -D {master_dir}")#Initializes the Master with common user postgres 
 
     pgconf = os.path.join(master_dir,"postgresql.conf")
     with open(pgconf,"a") as f:
@@ -89,13 +90,13 @@ def setup_master():
 def setup_slave(ctr :int):
     print("\n Setting up Slave")
     slot_nm = f'slave_{ctr}'  
-    slave_dir = os.path.join(INSTALL_PATH,f"slave_data{ctr}")#Slave data
+    slave_dir = os.path.join(INSTALL_PATH,f"slave_data{ctr}")#Slave data directory
     
     if os.path.exists(slave_dir):
         status = subprocess.run(f"{bin_dir}/pg_ctl -D {slave_dir} status", shell=True)
         if(status.returncode==0):
             run(f"{bin_dir}/pg_ctl -D {slave_dir} -m fast stop")
-        run(f"{bin_dir}/psql -U postgres -p 5432 -d postgres -c \"SELECT pg_drop_replication_slot('{slot_nm}')\"")
+        #run(f"{bin_dir}/psql -U postgres -p 5432 -d postgres -c \"SELECT pg_drop_replication_slot('{slot_nm}')\"")
         run(f"rm -rf {slave_dir}")
 
     run(f"{bin_dir}/pg_basebackup -U postgres -D {slave_dir} -h {MASTER_IP} -p 5432 -X stream -R -C -S {slot_nm}")
@@ -110,7 +111,7 @@ def setup_slave(ctr :int):
             f.write(f"\nlisten_addresses = \'*\'")
         f.write(f"\nprimary_slot_name = '{slot_nm}'")
         f.write(f"\nhot_standby = on")
-    run(f"chmod 700 {slave_dir}")
+    run(f"chmod 700 {slave_dir}")#Sets read, write and execute permissions to user of the slave data
 
     print(f"\nStarting Slave {ctr} server...")
     run(f"{bin_dir}/pg_ctl -D {slave_dir} -l {log_dir}/slave{ctr}.log start")
@@ -123,22 +124,22 @@ def test_replication():
         " INSERT INTO test_replication (data) VALUES ('row1'), ('row2');"
         " SELECT * FROM test_replication;"
     )
-    cmd_master = f'{bin_dir}/psql -U postgres -p 5432 -d repltest -c "{test_sql}"'
+    cmd_master = f'{bin_dir}/psql -U postgres -p 5432 -d repltest -c "{test_sql}"' #Runs on Master, Creates table and adds data in the repltest database
     run(cmd_master)
     catchup_lag(5433)
-    cmd_slave = f'{bin_dir}/psql -U postgres -p 5433 -d repltest -c "SELECT pg_is_in_recovery(), * FROM test_replication;"'
+    cmd_slave = f'{bin_dir}/psql -U postgres -p 5433 -d repltest -c "SELECT pg_is_in_recovery(), * FROM test_replication;"' #Runs on Slave, Reads the table created in the Master in repltest database
     run(cmd_slave)
 
 def show_replication_status(slave_port: int):
     print("WAL Sender status on Master")
     master_sql = (
-        "SELECT pid, client_addr, state, sync_state, sent_lsn, write_lsn, replay_lsn "
+        "SELECT pid, client_addr, state, sync_state, sent_lsn, write_lsn, flush_lsn, replay_lsn "
         "FROM pg_stat_replication;"
     )
     run(f'{bin_dir}/psql -U postgres -p 5432 -d postgres -c "{master_sql}"')
 
     print("\nWAL Receiver status on Slave: \n")
-    slave_sql = ("SELECT status, written_lsn, slot_name FROM pg_stat_wal_receiver;")
+    slave_sql = ("SELECT pg_is_in_recovery(), status, slot_name, written_lsn, flushed_lsn, latest_end_lsn FROM pg_stat_wal_receiver;")
     run(f'{bin_dir}/psql -U postgres -p {slave_port} -d postgres -c "{slave_sql}"')
 
 def catchup_lag(slave_port : int):
