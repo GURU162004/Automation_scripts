@@ -39,14 +39,14 @@ def clone_source():
     run("git branch -r | grep REL")
     VERSION = input("Enter Version : ")
     run(f"git checkout REL_{VERSION}_STABLE")
-    with open(vfile,"w") as f:
-        f.write(VERSION)
     build_postgres(VERSION)
           
 def build_postgres(VERSION : str):
     postgres_bin = os.path.join(bin_dir,"postgres")
-    with open(vfile,"r") as f:
-        v = f.read()
+    v = VERSION
+    if os.path.exists(vfile):
+        with open(vfile,"r") as f:
+            v = f.read()
     if os.path.exists(postgres_bin) and v==VERSION:
         print("\nPostgreSQL is already compiled and installed")
         return
@@ -55,6 +55,8 @@ def build_postgres(VERSION : str):
     run(f"./configure --prefix={INSTALL_PATH} --with-pgport=5432")
     run("make")
     run("make install")
+    with open(vfile,"w") as f:
+        f.write(VERSION)
     
 def setup_master():
     print("\n Setting up Master")
@@ -67,23 +69,21 @@ def setup_master():
 
     pgconf = os.path.join(master_dir,"postgresql.conf")
     with open(pgconf,"a") as f:
-        f.write(f"\nport = 5432")
+        f.write(f"\nport = 5432")#Sets Master server port
         if MASTER_IP == "127.0.0.1" and SLAVE_IP == "127.0.0.1":#Checks the IPs are local host or not
             f.write(f"\nlisten_addresses = \'localhost\'")#If yes, sets listen addresses to local host
         else:
             f.write(f"\nlisten_addresses = \'*\'")#else, sets the listening addresses to *(to listen all IPv4s)
-        f.write(f"\nwal_level = replica")
+        f.write(f"\nwal_level = replica")#Provides enough information to support WAL archiving and streaming replication, including running read-only queries on a standby server. 
         f.write(f"\nmax_wal_senders = 10")#Set according to number of slaves required, default 10
-        f.write(f"\nwal_keep_size = 1000")
+        f.write(f"\nwal_keep_size = 1024")#Minimum amount of WAL(Write Ahead Log) data to retain in the pg_wal directory of Master in Mb
         f.write(f"\nmax_replication_slots = 10")#Set according to number of slaves required, default 10
 
     pg_hba = os.path.join(master_dir,"pg_hba.conf")
     with open(pg_hba,"a") as f:
         f.write(f"host    replication    postgres    {SLAVE_IP}/32    trust\n")
-
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
-    
     run(f"{bin_dir}/pg_ctl -D {master_dir} -l {log_dir}/master.log start")
 
 def setup_slave(ctr :int):
