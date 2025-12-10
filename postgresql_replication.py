@@ -40,6 +40,9 @@ def clone_source():
     run(f"git checkout REL_{VERSION}_STABLE")
           
 def build_postgres():
+    if os.path.exists(bin_dir) and not v == VERSION:
+        print("PostgreSQL already compiled and installed")
+        return
     os.chdir(SOURCE_FOLDER)
     print("\n Configuring, Compiling and Installing PostgreSQL")
     run(f"./configure --prefix={INSTALL_PATH} --with-pgport=5432")
@@ -109,7 +112,6 @@ def setup_slave(ctr :int):
 def test_replication():
     run(f'{bin_dir}/psql -U postgres -p 5432 -d postgres -c "DROP DATABASE IF EXISTS repltest;"')
     run(f'{bin_dir}/psql -U postgres -p 5432 -d postgres -c "CREATE DATABASE repltest;"')
-    
     test_sql = (
         " CREATE TABLE test_replication (id serial primary key, data text);"
         " INSERT INTO test_replication (data) VALUES ('row1'), ('row2');"
@@ -118,7 +120,6 @@ def test_replication():
     cmd_master = f'{bin_dir}/psql -U postgres -p 5432 -d repltest -c "{test_sql}"'
     run(cmd_master)
     catchup_lag(5433)
-    wait_catchup(5433)
     cmd_slave = f'{bin_dir}/psql -U postgres -p 5433 -d repltest -c "SELECT pg_is_in_recovery(), * FROM test_replication;"'
     run(cmd_slave)
 
@@ -138,26 +139,13 @@ def catchup_lag(slave_port : int):
     while True:
         cmd_master = (f'{bin_dir}/psql -U postgres -p 5432 -d postgres -t -c "SELECT pg_current_wal_lsn();"')
         master_lsn = subprocess.getoutput(cmd_master).strip()
-        cmd_standby = (f'{bin_dir}/psql -U postgres -p {slave_port} -d postgres -t -c "SELECT pg_last_wal_receive_lsn();"')
+        cmd_standby = (f'{bin_dir}/psql -U postgres -p {slave_port} -d postgres -t -c "SELECT pg_last_wal_replay_lsn();"')
         standby_lsn = subprocess.getoutput(cmd_standby).strip()
-        print(f"  master_lsn={master_lsn}, standby_received_lsn={standby_lsn}")
+        print(f"  master_lsn={master_lsn}, standby_replay_lsn={standby_lsn}")
         if master_lsn == standby_lsn and master_lsn not in ("", "(null)"):
-            print("Slave has received WAL up to Master's current LSN.")
+            print("Slave has replayed WAL record up to Master's current LSN.")
             break
         time.sleep(2)
-
-def wait_catchup(slave_port: int):
-    while True:
-        cmd = (
-            f'{bin_dir}/psql -U postgres -p {slave_port} -d postgres '
-            f'-t -c "SELECT pg_last_wal_receive_lsn() = pg_last_wal_replay_lsn();"'
-        )
-        result = subprocess.getoutput(cmd).strip()
-        if result == "t":
-            print("Standby has replayed all received WAL.")
-            break
-        time.sleep(2)
-
 
 if __name__=="__main__":
     clone_source()
