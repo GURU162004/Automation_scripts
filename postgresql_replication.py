@@ -47,10 +47,10 @@ def build_postgres(VERSION : str):
     if os.path.exists(vfile):
         with open(vfile,"r") as f:
             v = f.read()
-    if os.path.exists(postgres_bin) and v==VERSION:
+    if os.path.exists(postgres_bin) and v==VERSION:#Postgresql is installed when the postgres bin directory is present and it is same as the specified version
         print("\nPostgreSQL is already compiled and installed")
         return
-    os.chdir(SOURCE_FOLDER)
+    os.chdir(SOURCE_FOLDER)#Otherwise, the PostgreSQL is installed
     print("\n Configuring, Compiling and Installing PostgreSQL")
     run(f"./configure --prefix={INSTALL_PATH} --with-pgport=5432")
     run("make")
@@ -73,7 +73,7 @@ def setup_master():
         if MASTER_IP == "127.0.0.1" and SLAVE_IP == "127.0.0.1":#Checks the IPs are local host or not
             f.write(f"\nlisten_addresses = \'localhost\'")#If yes, sets listen addresses to local host
         else:
-            f.write(f"\nlisten_addresses = \'*\'")#else, sets the listening addresses to *(to listen all IPv4s)
+            f.write(f"\nlisten_addresses = \'*\'")#else, sets the listening addresses to * to listen all IPv4s
         f.write(f"\nwal_level = replica")#Provides enough information to support WAL archiving and streaming replication, including running read-only queries on a standby server. 
         f.write(f"\nmax_wal_senders = 10")#Set according to number of slaves required, default 10
         f.write(f"\nwal_keep_size = 1024")#Minimum amount of WAL(Write Ahead Log) data to retain in the pg_wal directory of Master in Mb
