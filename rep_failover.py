@@ -50,11 +50,11 @@ def create_new_slave():
     run(f"{bin_dir}/pg_basebackup -U postgres -D {slave_dir} -h {MASTER_IP} -p {MASTER_PORT} -X stream -R -C -S {slot_name}")
     run(f"chmod 700 {slave_dir}")
 
-    alter = f'{bin_dir}/psql -U postgres -p {SLAVE_PORT} -d postgres -c "ALTER SYSTEM SET primary_slot_name = \'{slot}\';"'
+    alter = f'{bin_dir}/psql -U postgres -p {SLAVE_PORT} -d postgres -c "ALTER SYSTEM SET primary_slot_name = \'{slot_name}\';"'
     run(alter)
     run(f"{bin_dir}/pg_ctl -D {slave_dir} restart")
     time.sleep(3)
-    print("New slave created and started, using slot:", slot)
+    print("New slave created and started, using slot:", slot_name)
 
 if __name__ == "__main__":
     master_up = Is_running(MASTER_PORT)
