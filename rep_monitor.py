@@ -8,6 +8,7 @@ bin_dir = os.path.join(INSTALL_PATH,"bin")
 master_dir = os.path.join(INSTALL_PATH,"master_data")#Master data directory
 slave_dir = os.path.join(INSTALL_PATH,"slave_data1")#Slave data directory
 newslave_dir = os.path.join(INSTALL_PATH,"slave_data2")
+script_path = os.path.join(HOME_DIR,"Automation_scripts")
 master_port = 5432
 slave_port = 5433
 
@@ -20,11 +21,11 @@ def run_query(port, sql):
         return None
     
 def check_server_status(port):
-    result = subprocess.run(f"{bin_dir}/pg_isready -p {port}", capture_output=True, shell=True)
+    result = subprocess.run(f"{bin_dir}/pg_isready -p {port}", capture_output=True, shell=True)#Checks postgresql server running or not.
     return result.returncode == 0
 
 def get_replicationstatus(port):
-    repl_sql = "SELECT client_addr, state, write_lag, replay_lag FROM pg_stat_replication;"
+    repl_sql = "SELECT pid, client_addr, state FROM pg_stat_replication;"
     repl_info = run_query(port, repl_sql)
     return repl_info
 
@@ -51,7 +52,7 @@ def monitor_loop():
             is_standby = subprocess.getoutput(status).strip()
             if is_standby == 't':
                 print("Role: Standby")
-                slave_sql = "SELECT sender_host, slot_name, status FROM pg_stat_wal_receiver;"
+                slave_sql = "SELECT pid, sender_host, slot_name, status FROM pg_stat_wal_receiver;"
                 recv_info = run_query(slave_port, slave_sql)
                 if recv_info:
                     print(f"    WAL Receiver: \n {recv_info}")
@@ -62,22 +63,19 @@ def monitor_loop():
                     print(f"Replication State: \n {srepl_info}")
                 else:
                     print("No active replication connections found.")
-
         else:
             print("SLAVE IS NOT RUNNING")
-
-        failover_path = os.path.join(HOME_DIR,"Automation_scripts")
 
         if not master_up and slave_up:
             status = f'{bin_dir}/psql -U postgres -p {slave_port} -d postgres -t -A -c "SELECT pg_is_in_recovery();"'
             is_standby = subprocess.getoutput(status).strip()
             if is_standby == "t":
                 print("\nMaster DOWN. Slave is STANDBY.")
-                subprocess.run("python3 rep_failover.py",shell=True,cwd=failover_path)
+                subprocess.run("python3 rep_failover.py",shell=True,cwd=script_path)
 
         elif master_up and not slave_up:
             print("\nSlave is DOWN.")
-            subprocess.run("python3 rep_failover.py",shell=True,cwd=failover_path)
+            subprocess.run("python3 rep_failover.py",shell=True,cwd=script_path)
 
         time.sleep(2)
 
