@@ -1,7 +1,6 @@
 import subprocess
 import sys
 import os
-import time
 import csv
 
 DIR_NAME = "pgsql_git"

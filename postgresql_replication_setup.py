@@ -22,8 +22,8 @@ def run(command, cwd=None, shell=True, env=None):
     try:
         subprocess.run(command, cwd=cwd, shell=shell, check=True, env=env)
     except subprocess.CalledProcessError as e:
-        print(f"\n[!] Error executing command: {command}")
-        print(f"[!] Reason: {e}")
+        print(f"\nError executing command: {command}")
+        print(f"Reason: {e}")
         sys.exit(1)
     
 def clone_source():
@@ -96,7 +96,7 @@ def setup_slave(ctr :int):
         status = subprocess.run(f"{bin_dir}/pg_ctl -D {slave_dir} status", shell=True)
         if(status.returncode==0):
             run(f"{bin_dir}/pg_ctl -D {slave_dir} -m fast stop")
-        #run(f"{bin_dir}/psql -U postgres -p 5432 -d postgres -c \"SELECT pg_drop_replication_slot('{slot_nm}')\"")
+        run(f"{bin_dir}/psql -U postgres -p 5432 -d postgres -c \"SELECT pg_drop_replication_slot('{slot_nm}') WHERE EXISTS (SELECT 1 FROM pg_replication_slots WHERE slot_name = '{slot_nm}');\"")
         run(f"rm -rf {slave_dir}")
 
     run(f"{bin_dir}/pg_basebackup -U postgres -D {slave_dir} -h {MASTER_IP} -p 5432 -X stream -R -C -S {slot_nm}")
