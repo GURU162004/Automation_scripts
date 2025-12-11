@@ -1,5 +1,4 @@
 import subprocess
-import sys
 import os
 import time
 
@@ -25,7 +24,7 @@ def check_server_status(port):
     return result.returncode == 0
 
 def get_replicationstatus(port):
-    repl_sql = "SELECT client_addr, state, sent_lsn, write_lsn, replay_lsn FROM pg_stat_replication;"
+    repl_sql = "SELECT client_addr, state, write_lag, replay_lag FROM pg_stat_replication;"
     repl_info = run_query(port, repl_sql)
     return repl_info
 
@@ -52,7 +51,7 @@ def monitor_loop():
             is_standby = subprocess.getoutput(status).strip()
             if is_standby == 't':
                 print("Role: Standby")
-                slave_sql = "SELECT sender_host, slot_name, status, written_lsn, latest_end_lsn FROM pg_stat_wal_receiver;"
+                slave_sql = "SELECT sender_host, slot_name, status FROM pg_stat_wal_receiver;"
                 recv_info = run_query(slave_port, slave_sql)
                 if recv_info:
                     print(f"    WAL Receiver: \n {recv_info}")
