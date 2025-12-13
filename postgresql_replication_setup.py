@@ -99,18 +99,23 @@ def setup_slave(ctr :int):
         run(f"{bin_dir}/psql -U postgres -p 5432 -d postgres -c \"SELECT pg_drop_replication_slot('{slot_nm}') WHERE EXISTS (SELECT 1 FROM pg_replication_slots WHERE slot_name = '{slot_nm}');\"")
         run(f"rm -rf {slave_dir}")
 
-    run(f"{bin_dir}/pg_basebackup -U postgres -D {slave_dir} -h {MASTER_IP} -p 5432 -X stream -R -C -S {slot_nm}")
+    run(f"{bin_dir}/pg_basebackup -U postgres -D {slave_dir} -h {MASTER_IP} -p 5432 -X stream -R -C -S {slot_nm}") #Backups the Master data to the new Slave data 
+    #-X stream : Streams the WAL records during backup to avoid data loss during backup process
+    #-R : Creates Standby.signal on the slave data and auto configures the connection settings of the master in the postgresql.
+    #-C -S Creates a new slot with the given name
+    #Replication slots acts like a queue or a buffer that store the wal files until it is confirmed that slave received them.
+    
     port = 5432+ctr
 
     pgconf1 = os.path.join(slave_dir,"postgresql.conf")
     with open(pgconf1,"a") as f:
         f.write(f"\nport = {port}")
-        if MASTER_IP == "127.0.0.1" and SLAVE_IP == "127.0.0.1":
-            f.write(f"\nlisten_addresses = \'localhost\'")
+        if MASTER_IP == "127.0.0.1" and SLAVE_IP == "127.0.0.1":#Checks the connection is local host or not.
+            f.write(f"\nlisten_addresses = \'localhost\'")#Sets to local host 
         else:
-            f.write(f"\nlisten_addresses = \'*\'")
-        f.write(f"\nprimary_slot_name = '{slot_nm}'")
-        f.write(f"\nhot_standby = on")
+            f.write(f"\nlisten_addresses = \'*\'")#Sets to accept any IPv4 addresses
+        f.write(f"\nprimary_slot_name = '{slot_nm}'")#Configures the slot created
+        f.write(f"\nhot_standby = on")#Allows replica to accept read only queries and connect to primary server
     run(f"chmod 700 {slave_dir}")#Sets read, write and execute permissions to user of the slave data
 
     print(f"\nStarting Slave {ctr} server...")
@@ -129,18 +134,6 @@ def test_replication():
     catchup_lag(5433)
     cmd_slave = f'{bin_dir}/psql -U postgres -p 5433 -d repltest -c "SELECT pg_is_in_recovery(), * FROM test_replication;"' #Runs on Slave, Reads the table created in the Master in repltest database
     run(cmd_slave)
-
-def show_replication_status(slave_port: int):
-    print("WAL Sender status on Master")
-    master_sql = (
-        "SELECT pid, client_addr, state, sync_state, sent_lsn, write_lsn, flush_lsn, replay_lsn "
-        "FROM pg_stat_replication;"
-    )
-    run(f'{bin_dir}/psql -U postgres -p 5432 -d postgres -c "{master_sql}"')
-
-    print("\nWAL Receiver status on Slave: \n")
-    slave_sql = ("SELECT pg_is_in_recovery(), status, slot_name, written_lsn, flushed_lsn, latest_end_lsn FROM pg_stat_wal_receiver;")
-    run(f'{bin_dir}/psql -U postgres -p {slave_port} -d postgres -c "{slave_sql}"')
 
 def catchup_lag(slave_port : int):
     while True:
@@ -177,7 +170,6 @@ if __name__=="__main__":
             break
     
     print("\n Configured Master Slave Replication Setup")
-    show_replication_status(5433)
     print("Testing Single Master Slave setup..")
     test_replication()
     

@@ -3,7 +3,7 @@ import sys
 import os
 import csv
 
-DIR_NAME = "pgsql_git"
+DIR_NAME = "pgsql"
 SOURCE_URL = "https://github.com/postgres/postgres.git" 
 TPCH_URL = "https://github.com/gregrahn/tpch-kit.git"
 
@@ -42,7 +42,7 @@ def clone_source():
           
 def build_postgres():
     print("\n Configuring and Compiling ")
-    run(f"./configure --prefix={INSTALL_PATH} --with-pgport=5433",cwd=SOURCE_FOLDER)#Configured to install in a custom folder in home and run at port 5433
+    run(f"./configure --prefix={INSTALL_PATH} --with-pgport=5432",cwd=SOURCE_FOLDER)#Configured to install in a custom folder in home and run at port 5433
     run("make",cwd=SOURCE_FOLDER)#Compiles and builds the source
     run("make install",cwd=SOURCE_FOLDER)#Installs PostgreSQL from source
     
@@ -79,14 +79,14 @@ def setup_tpch():
     else:
         print("\nTPC-H data already exists, skipping dbgen")
 
-    run(f"{BIN_DIR}/dropdb -p 5433 --if-exists tpch",cwd=dbgen_dir)#Drops the tpch database if it already exists on port 5433
-    run(f"{BIN_DIR}/createdb -p 5433 tpch",cwd=dbgen_dir)#Creates a database to run on port 5433 with name tpch
-    run(f"{BIN_DIR}/psql -p 5433 -d tpch -f dss.ddl",cwd=dbgen_dir)#Creates tables and structure for the TPC-H database from the dss.ddl(Data Definition Language(DDL) file)
+    run(f"{BIN_DIR}/dropdb -p 5432 --if-exists tpch",cwd=dbgen_dir)#Drops the tpch database if it already exists on port 5433
+    run(f"{BIN_DIR}/createdb -p 5432 tpch",cwd=dbgen_dir)#Creates a database to run on port 5433 with name tpch
+    run(f"{BIN_DIR}/psql -p 5432 -d tpch -f dss.ddl",cwd=dbgen_dir)#Creates tables and structure for the TPC-H database from the dss.ddl(Data Definition Language(DDL) file)
     
     for tbl in tables:
         file = f"{tbl}.tbl"
         sql = f"\\copy {tbl} FROM '{file}' WITH (FORMAT csv, DELIMITER '|', NULL '')"
-        run(f'{BIN_DIR}/psql -p 5433 -d tpch -c "{sql}"',cwd=dbgen_dir)#Copies the dataset from the table files in csv format to the TPC-H database
+        run(f'{BIN_DIR}/psql -p 5432 -d tpch -c "{sql}"',cwd=dbgen_dir)#Copies the dataset from the table files in csv format to the TPC-H database
     
     run("cp -r queries queries_backup",cwd=dbgen_dir)#copies the queries to the queries_backup folder
     run("git clone https://github.com/dhuny/tpch.git temp",cwd=dbgen_dir)#clones TPC-H sql queries to temp folder
@@ -109,7 +109,7 @@ def run_queries():
             run_times = []
             for r in range(3):
                 print(f"Trial {r+1}: Query {qfile} executing...")
-                cmd = f'{BIN_DIR}/psql -p 5433 -q -t -d tpch -c "\\timing on" -f {TPCH_DIR}/dbgen/queries/{qfile} | grep "Time:"'#Runs each query files and pipes only the Time output
+                cmd = f'{BIN_DIR}/psql -p 5432 -q -t -d tpch -c "\\timing on" -f {TPCH_DIR}/dbgen/queries/{qfile} | grep "Time:"'#Runs each query files and pipes only the Time output
                 res = subprocess.run(cmd,shell=True,check=True,text=True,stdout = subprocess.PIPE,stderr=subprocess.STDOUT)#Runs and captures the result
                 output = res.stdout.split(' ')
                 run_time = float(output[1])#Extracts the time value from the Time: output in float data type
