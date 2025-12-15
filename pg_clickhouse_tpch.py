@@ -46,7 +46,7 @@ def run_tpch_queries():
     with open(out, "w", newline="") as f:
         writer = csv.writer(f)
         writer.writerow(["Query","Trial1_Time(ms)","Trial2_Time(ms)","Trial3_Time(ms)","Average_Time(ms)"])
-        queries = [1,3]
+        queries = [1,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]
         for i in queries:
             times = []
             for r in range(3):
