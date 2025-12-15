@@ -46,7 +46,7 @@ def build_postgres():
     run("make",cwd=SOURCE_FOLDER)#Compiles and builds the source
     run("make install",cwd=SOURCE_FOLDER)#Installs PostgreSQL from source
     
-def setup_database():
+def setup_pg():
     print("\n Setting up Database")
     data_dir = os.path.join(INSTALL_PATH,"data")#PostgreSQL database directory
     if not os.path.exists(data_dir):
@@ -79,7 +79,7 @@ def setup_tpch():
     else:
         print("\nTPC-H data already exists, skipping dbgen")
 
-    run(f"{BIN_DIR}/dropdb -p 5432 --if-exists tpch",cwd=dbgen_dir)#Drops the tpch database if it already exists on port 5433
+    run(f"{BIN_DIR}/dropdb -p 5432 --if-exists tpch",cwd=dbgen_dir)#Drops the tpch database if it already exists on port 5432
     run(f"{BIN_DIR}/createdb -p 5432 tpch",cwd=dbgen_dir)#Creates a database to run on port 5433 with name tpch
     run(f"{BIN_DIR}/psql -p 5432 -d tpch -f dss.ddl",cwd=dbgen_dir)#Creates tables and structure for the TPC-H database from the dss.ddl(Data Definition Language(DDL) file)
     
@@ -94,7 +94,7 @@ def setup_tpch():
     run("rm -rf temp",cwd=dbgen_dir)#Removes the temperory copy
 
 def run_queries():
-    results_csv = "tpch_results.csv"
+    results_csv = "pg_tpch_results.csv"
     csv_path = os.path.join(TPCH_DIR,results_csv)
     
     if os.path.exists(csv_path):
@@ -116,14 +116,14 @@ def run_queries():
                 run_times.append(run_time)
                 print(f'Time: {run_time:.2f} ms')
             avg = (run_times[0] + run_times[1] + run_times[2])/3.0 #Computes Average execution time by the query for 3 trials
-            print(f"The Average Execution time of the Query {qfile} is {avg:.2f} ms")
+            print(f"The Average Execution time of the Query {qfile} is {avg:.2f} ms\n")
             writer.writerow([qfile] + run_times + [avg])#writes records for each query
     print(f"\nResults saved to: {results_csv}")
 
 if __name__=="__main__":
     clone_source()
     build_postgres()
-    setup_database()
+    setup_pg()
     setup_tpch()
     run_queries()
-    print("\n Tested TPC-H Dataset benchmark")
+    print("\n Tested TPC-H Dataset benchmark on PostgreSQL")

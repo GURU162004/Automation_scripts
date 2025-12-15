@@ -37,7 +37,7 @@ def clone_source():
     print("\n listing branches : ")
     os.chdir(SOURCE_FOLDER)
     run("git branch -r | grep REL")
-    VERSION = input("Enter Version : ")
+    VERSION = input("Enter PostgreSQL Version : ")
     run(f"git checkout REL_{VERSION}_STABLE")
     build_postgres(VERSION)
           
@@ -45,7 +45,7 @@ def build_postgres(VERSION : str):
     postgres_bin = os.path.join(bin_dir,"postgres")
     v = VERSION
     if os.path.exists(vfile):
-        with open(vfile,"r") as f:
+        with open(vfile,"r") as f:#reads the version from the version file created after installation
             v = f.read().strip()
         run(f"rm -rf {vfile}")
     if os.path.exists(postgres_bin) and v==VERSION:#Postgresql is installed when the postgres bin directory is present and it is same as the specified version
@@ -53,9 +53,9 @@ def build_postgres(VERSION : str):
         return
     os.chdir(SOURCE_FOLDER)#Otherwise, the PostgreSQL is installed
     print("\n Configuring, Compiling and Installing PostgreSQL")
-    run(f"./configure --prefix={INSTALL_PATH} --with-pgport=5432")
-    run("make")
-    run("make install")
+    run(f"./configure --prefix={INSTALL_PATH} --with-pgport=5432")#Configured to install in a custom folder in home and run at port 5432
+    run("make")#Compiles and builds the source
+    run("make install")#Installs Postgres from the source.
     with open(vfile,"w") as f:
         f.write(VERSION)
     
@@ -81,11 +81,11 @@ def setup_master():
         f.write(f"\nmax_replication_slots = 10")#Set according to number of slaves required, default 10
 
     pg_hba = os.path.join(master_dir,"pg_hba.conf")
-    with open(pg_hba,"a") as f:
-        f.write(f"host    replication    postgres    {SLAVE_IP}/32    trust\n")
+    with open(pg_hba,"a") as f:#Opens the host based authentication file.
+        f.write(f"host    replication    postgres    {SLAVE_IP}/32    trust\n")#Sets the host and connection to replication, user: postgres, SLAVE IP and sets no password authentication(trust)
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
-    run(f"{bin_dir}/pg_ctl -D {master_dir} -l {log_dir}/master.log start")
+    run(f"{bin_dir}/pg_ctl -D {master_dir} -l {log_dir}/master.log start")#Starts the master server and logs
 
 def setup_slave(ctr :int):
     print("\n Setting up Slave")
@@ -97,11 +97,12 @@ def setup_slave(ctr :int):
         if(status.returncode==0):
             run(f"{bin_dir}/pg_ctl -D {slave_dir} -m fast stop")
         run(f"{bin_dir}/psql -U postgres -p 5432 -d postgres -c \"SELECT pg_drop_replication_slot('{slot_nm}') WHERE EXISTS (SELECT 1 FROM pg_replication_slots WHERE slot_name = '{slot_nm}');\"")
+        #Drops the replication slot, if the slot exists in the table pg_replication_slots
         run(f"rm -rf {slave_dir}")
 
     run(f"{bin_dir}/pg_basebackup -U postgres -D {slave_dir} -h {MASTER_IP} -p 5432 -X stream -R -C -S {slot_nm}") #Backups the Master data to the new Slave data 
     #-X stream : Streams the WAL records during backup to avoid data loss during backup process
-    #-R : Creates Standby.signal on the slave data and auto configures the connection settings of the master in the postgresql.
+    #-R : Creates Standby.signal on the slave data and auto configures the connection settings of the master to the slave server.
     #-C -S Creates a new slot with the given name
     #Replication slots acts like a queue or a buffer that store the wal files until it is confirmed that slave received them.
     
@@ -122,8 +123,8 @@ def setup_slave(ctr :int):
     run(f"{bin_dir}/pg_ctl -D {slave_dir} -l {log_dir}/slave{ctr}.log start")
 
 def test_replication():
-    run(f'{bin_dir}/psql -U postgres -p 5432 -d postgres -c "DROP DATABASE IF EXISTS repltest;"')
-    run(f'{bin_dir}/psql -U postgres -p 5432 -d postgres -c "CREATE DATABASE repltest;"')
+    run(f'{bin_dir}/psql -U postgres -p 5432 -d postgres -c "DROP DATABASE IF EXISTS repltest;"')#drops the repltest db if it exists
+    run(f'{bin_dir}/psql -U postgres -p 5432 -d postgres -c "CREATE DATABASE repltest;"')#creates new repltest db
     test_sql = (
         " CREATE TABLE test_replication (id serial primary key, data text);"
         " INSERT INTO test_replication (data) VALUES ('row1'), ('row2');"
@@ -138,9 +139,9 @@ def test_replication():
 def catchup_lag(slave_port : int):
     while True:
         cmd_master = (f'{bin_dir}/psql -U postgres -p 5432 -d postgres -t -c "SELECT pg_current_wal_lsn();"')
-        master_lsn = subprocess.getoutput(cmd_master).strip()
+        master_lsn = subprocess.getoutput(cmd_master).strip()#LSN of the WAL record written on the cache memory of the master at the time it was called
         cmd_standby = (f'{bin_dir}/psql -U postgres -p {slave_port} -d postgres -t -c "SELECT pg_last_wal_replay_lsn();"')
-        standby_lsn = subprocess.getoutput(cmd_standby).strip()
+        standby_lsn = subprocess.getoutput(cmd_standby).strip()#LSN of the most recent WAL record that has been applied on Slave
         print(f"  master_lsn={master_lsn}, standby_replay_lsn={standby_lsn}")
         if master_lsn == standby_lsn and master_lsn not in ("", "(null)"):
             print("Slave has replayed WAL record up to Master's current LSN.")
