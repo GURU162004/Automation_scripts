@@ -48,7 +48,10 @@ def build_postgres(VERSION : str):
         return
     os.chdir(SOURCE_FOLDER)#Otherwise, the PostgreSQL is installed
     print("\n Configuring, Compiling and Installing PostgreSQL")
-    run(f"./configure --prefix={INSTALL_PATH} --with-pgport=5432")
+    run("export LLVM_HOME=$HOME/installs/llvm20")
+    run("export PATH=$LLVM_HOME/bin:$PATH")
+    run("export LD_LIBRARY_PATH=$LLVM_HOME/lib:$LD_LIBRARY_PATH")
+    run(f"CC=clang CXX=clang++ LLVM_CONFIG=$LLVM_HOME/bin/llvm-config LDFLAGS=\"-L$LLVM_HOME/lib -Wl,-rpath,$LLVM_HOME/lib\" CFLAGS=\"-O0 -g3 -fno-omit-frame-pointer -fno-inline\" ./configure --prefix={INSTALL_PATH} --with-pgport=5432 --enable-debug --enable-cassert --enable-depend")
     #Configured to install in a custom folder in home and run at port 5432
     run("make")#Compiles and builds the source
     run("make install")#Installs Postgres from the source.

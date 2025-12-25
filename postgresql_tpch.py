@@ -3,7 +3,7 @@ import sys
 import os
 import csv
 
-DIR_NAME = "pgsql"
+DIR_NAME = "installs"
 SOURCE_URL = "https://github.com/postgres/postgres.git" 
 TPCH_URL = "https://github.com/gregrahn/tpch-kit.git"
 
@@ -121,9 +121,9 @@ def run_queries():
     print(f"\nResults saved to: {results_csv}")
 
 if __name__=="__main__":
-    clone_source()
-    build_postgres()
-    setup_pg()
+    #clone_source()
+    #build_postgres()
+    #setup_pg()
     setup_tpch()
-    run_queries()
-    print("\n Tested TPC-H Dataset benchmark on PostgreSQL")
+    #run_queries()
+    #print("\n Tested TPC-H Dataset benchmark on PostgreSQL")

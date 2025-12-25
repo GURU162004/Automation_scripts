@@ -3,7 +3,7 @@ import sys
 import os
 import requests
 
-DIR_NAME = "pgsql_auto"
+DIR_NAME = "pgsql"
 SOURCE_URL = "https://ftp.postgresql.org/pub/source/v18.1/postgresql-18.1.tar.bz2"
 
 HOME_DIR = os.path.expanduser("~")
