@@ -1,0 +1,11 @@
+Test Slave failover:
+
+~/pgsql_replica/bin/psql -U postgres -p 5432 -d repltest -c "INSERT INTO test_replication (data) VALUES ('recovery');"
+
+~/pgsql_replica/bin/psql -U postgres -p 5433 -d repltest -c "SELECT * FROM test_replication WHERE data = 'recovery';"
+
+Test Master failover:
+
+~/pgsql_replica/bin/psql -U postgres -p 5433 -d repltest -c "INSERT INTO test_replication (data) VALUES ('new_master');"
+
+~/pgsql_replica/bin/psql -U postgres -p 5433 -d repltest -c "SELECT * FROM test_replication;"
