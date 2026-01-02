@@ -1,27 +1,37 @@
-# Automation Scripts
+# **Automation Scripts**
 
-Scripts written for the automation of following tasks:
+## Tasks:
 
 1. PostgreSQL Installation 
    
-   Intallation of PostgreSQL can be done via git and source zip. Run the installation script of your choice.
+   - Intallation of PostgreSQL can be done via git and source zip. Run the installation script of your choice.
 
 2. TPC-H Data Analysis
 
-   Install and Generate the tpch dataset 
-   Load the tpch dataset onto the PostgreSQL database.
-   Run the tpch queries on Postgres server
-   Analyse the execution time of each queries and store the results on a csv file
+   - Install and Generate the tpch dataset 
+   - Load the tpch dataset onto the PostgreSQL database.
+   - Run the tpch queries on Postgres server
+   - Analyse the execution time of each queries and store the results on a csv file
 
 3. Replication
    
-   Setup Master Slave Replication setup on same machine or on two PCs of your choice.
-   Setup one Master and Multiple Slaves of your choice
-   Monitor the Master and Slave server continuosly
-   Failover scenarios implemented:
-        If Master fails and Slave is running. The script autmatically promotes the slave to Master
-        If Slave fails, a new Slave is created.
+   - Setup Master Slave Replication setup on same machine or on two PCs of your choice.
+   - Setup one Master and Multiple Slaves of your choice
+   - Monitor the Master and Slave server continuosly
+   - Failover scenarios implemented:
+        + If Master fails and Slave is running. The script automatically promotes the slave to Master
+        + If Slave fails, a new Slave is created.
 
-4. ClickHouse Extension
+4. ClickHouse Extension - pg_clickhouse
 
-   Test the performance of the TPC-H dataset by running the tpch queries on postgres with the pg_clickhouse extension
+   - Test the performance of the TPC-H dataset by running the tpch queries on postgres with the pg_clickhouse extension
+   - Try testing the pg_clickhouse extension working and performance by running queries on postgres tpch instance 
+
+## References:
+
+- [PostgreSQL Documentation](https://www.postgresql.org/docs/)
+- [TPC-H Dataset](https://clickhouse.com/docs/getting-started/example-datasets/tpch)
+- [Clickhouse Documentation](https://clickhouse.com/docs/intro)
+- [Introducing pg_clickhouse extension](https://clickhouse.com/blog/introducing-pg_clickhouse)
+- [pg_clickhouse documentation](https://clickhouse.com/docs/integrations/pg_clickhouse)
+

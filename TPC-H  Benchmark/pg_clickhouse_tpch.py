@@ -26,6 +26,7 @@ def setup_pg_clickhouse():
     else:
         print("\nPostgreSQL server is already running.")
     
+    #Uncomment this line if the dataset should not be present on postgres tpch database
     #run(f'{PG_BIN}/psql -p 5432 -d tpch -c "DROP TABLE IF EXISTS customer, lineitem, nation, orders, part, partsupp, region, supplier CASCADE;"')
     
     run(f'{PG_BIN}/psql -p 5432 -d tpch -c "CREATE EXTENSION IF NOT EXISTS pg_clickhouse;"')
@@ -38,9 +39,7 @@ def setup_pg_clickhouse():
 
     run(f'{PG_BIN}/psql -p 5432 -d tpch -c "CREATE USER MAPPING FOR CURRENT_USER SERVER ch1 OPTIONS(user \'default\', password \'\');"')
 
-    run(f'{PG_BIN}/psql -p 5432 -d tpch -f ./pgch.sql')
-
-    run(f'{PG_BIN}/psql -p 5432 -d tpch -c "SET search_path TO clickhouse, public;"')
+    run(f'{PG_BIN}/psql -p 5432 -d tpch -f ./pgch.sql') #Runs the sql file containing the create foreign table queries for clickhouse tpch tables.
 
 def run_tpch_queries():
     out = os.path.join(HOME, "pg_clickhouse_tpch_results.csv")
@@ -64,11 +63,11 @@ def run_tpch_queries():
 
             avg = (times[0] + times[1] + times[2])/3.0 
             print(f"The Average Execution time of the Query {i} is {avg:.2f} ms\n")          
-            writer.writerow([f"Query {i}:"] + times + [avg])
+            writer.writerow([f"Query {i}:"] + times + [f"{avg:.2f}"])
     print(f"\nResults saved to: {out}")
 
 if __name__ == "__main__":
     setup_pg_clickhouse()
-    #run_tpch_queries()
-    #print("\n Stop the ClickHouse server using the command below:\n")
+    run_tpch_queries()
+    print("\n Stop the ClickHouse server using the command below:\n")
     print("ch-stop")

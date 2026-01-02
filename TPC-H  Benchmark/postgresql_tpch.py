@@ -117,13 +117,13 @@ def run_queries():
                 print(f'Time: {run_time:.2f} ms')
             avg = (run_times[0] + run_times[1] + run_times[2])/3.0 #Computes Average execution time by the query for 3 trials
             print(f"The Average Execution time of the Query {qfile} is {avg:.2f} ms\n")
-            writer.writerow([qfile] + run_times + [avg])#writes records for each query
+            writer.writerow([qfile] + run_times + [f"{avg:.2f}"])#writes records for each query
     print(f"\nResults saved to: {results_csv}")
 
 if __name__=="__main__":
-    #clone_source()
-    #build_postgres()
-    #setup_pg()
+    clone_source()
+    build_postgres()
+    setup_pg()
     setup_tpch()
-    #run_queries()
-    #print("\n Tested TPC-H Dataset benchmark on PostgreSQL")
+    run_queries()
+    print("\n Tested TPC-H Dataset benchmark on PostgreSQL")
